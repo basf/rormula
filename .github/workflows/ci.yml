@@ -35,7 +35,9 @@ jobs:
       with:
         command: develop
         working-directory: rormula
-    - name: Install pytest
-      run: pip3 install pytest
+    - name: Install dev dependencies
+      run: pip3 install pytest formulaic ruff
     - name: Test
       run: pytest test
+    - name: Lint
+      run: ruff check .

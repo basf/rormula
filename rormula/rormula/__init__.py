@@ -1,9 +1,6 @@
 from typing import List, NamedTuple, Tuple, Union
 import numpy as np
 import pandas as pd
-
-import pandas as pd
-
 from rormula import _rormula as ror
 
 
