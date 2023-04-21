@@ -28,6 +28,7 @@ jobs:
         python-version: 3.9
     - name: Create env
       run: python3 -m venv .venv
+    - name: Activate env
       run: . .venv/bin/activate
     - name: Build Rormula
       uses: PyO3/maturin-action@v1
