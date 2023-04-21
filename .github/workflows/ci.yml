@@ -33,4 +33,3 @@ jobs:
         working-directory: rormula
     - name: Test
       run: pytest test
-sist
