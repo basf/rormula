@@ -1,5 +1,5 @@
 use exmex::Express;
-use rormula::{
+use rormula_rs::{
     array::Array2d,
     expression::{Value, ExprArithmetic},
     expression::{ExprNames, ExprWilkinson, NameValue},

@@ -6,11 +6,11 @@ use pyo3::{
     exceptions::{PyTypeError, PyValueError},
     prelude::*,
 };
-pub use rormula::exmex::prelude::*;
-pub use rormula::exmex::ExError;
-use rormula::expression::{ExprColCount, ExprNames, ExprWilkinson, NameValue, Value};
-use rormula::result::RoErr;
-use rormula::{array::Array2d, expression::ExprArithmetic};
+pub use rormula_rs::exmex::prelude::*;
+pub use rormula_rs::exmex::ExError;
+use rormula_rs::expression::{ExprColCount, ExprNames, ExprWilkinson, NameValue, Value};
+use rormula_rs::result::RoErr;
+use rormula_rs::{array::Array2d, expression::ExprArithmetic};
 
 fn ex_to_pyerr(e: ExError) -> PyErr {
     PyTypeError::new_err(e.msg().to_string())

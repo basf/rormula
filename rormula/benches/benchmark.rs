@@ -5,7 +5,7 @@ use numpy::{
     PyArray2, PyReadonlyArray2,
 };
 use pyo3::PyResult;
-use rormula::array::Array2d;
+use rormula_rs::array::Array2d;
 use std::mem;
 
 /// Workaround from https://github.com/PyO3/pyo3/issues/1554
