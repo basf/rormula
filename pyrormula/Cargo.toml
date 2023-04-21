@@ -1,0 +1,25 @@
+[package]
+name = "pyrormula"
+version = "0.1.0-dev"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "rormula"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.18.1", features = ["extension-module", "generate-import-lib"] }
+numpy = "0.18.0"
+rormula = { path = "../rormula" }
+
+[package.metadata.maturin]
+name = "rormula._rormula"
+
+[dev-dependencies]
+criterion = { version = "0.4", features = ["html_reports"] }
+which = "4.4.0"
+
+[[bench]]
+name = "benchmark"
+harness = false
