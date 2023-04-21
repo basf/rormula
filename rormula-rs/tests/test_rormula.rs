@@ -1,7 +1,7 @@
 use exmex::Express;
 use rormula_rs::{
     array::Array2d,
-    expression::{Value, ExprArithmetic},
+    expression::{ExprArithmetic, Value},
     expression::{ExprNames, ExprWilkinson, NameValue},
 };
 

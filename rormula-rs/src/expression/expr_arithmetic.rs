@@ -4,7 +4,6 @@ use exmex::MakeOperators;
 use exmex::Operator;
 use std::mem;
 
-
 use super::ops_common;
 use super::Value;
 
@@ -41,11 +40,9 @@ pub fn op_unary(a: Value, op: &impl Fn(f64) -> f64) -> Value {
         Value::Array(mut arr) => {
             arr.elt_mutate(op);
             Value::Array(arr)
-        },
-        Value::Scalar(s) => {
-            Value::Scalar(s)
         }
-        _ => Value::Error("can only apply unary operator to numerical values".to_string())
+        Value::Scalar(s) => Value::Scalar(s),
+        _ => Value::Error("can only apply unary operator to numerical values".to_string()),
     }
 }
 
@@ -93,7 +90,7 @@ impl MakeOperators<Value> for ArithmeticOpsFactory {
                     prio: 1,
                     is_commutative: false,
                 },
-                |a| op_unary(a, &|a| -a)
+                |a| op_unary(a, &|a| -a),
             ),
         ]
     }
@@ -128,7 +125,12 @@ fn test() {
         _ => assert!(false),
     }
     let res = op_div(Value::Array(a.clone()), Value::Array(b.clone()));
-    let a_ref = Array2d::from_iter([0.0, 1.0, 2.0/3.0, 3.0/5.0, 2.0/5.0, 5.0/9.0].iter(), 6, 1).unwrap();
+    let a_ref = Array2d::from_iter(
+        [0.0, 1.0, 2.0 / 3.0, 3.0 / 5.0, 2.0 / 5.0, 5.0 / 9.0].iter(),
+        6,
+        1,
+    )
+    .unwrap();
     match res {
         Value::Array(a) => assert_eq!(a, a_ref.clone()),
         _ => assert!(false),
