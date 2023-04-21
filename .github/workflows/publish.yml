@@ -1,6 +1,8 @@
 # only trigger on tagged commits starting with "v"
 on: 
-  push
+  push:
+    tags:
+      - 'v*'
 
 permissions:
   contents: read

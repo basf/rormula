@@ -26,10 +26,15 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.9
-    - name: Install
+    - name: Create env
+      run: python3 -m venv .venv
+      run: . .venv/bin/activate
+    - name: Build Rormula
       uses: PyO3/maturin-action@v1
       with:
         command: develop
         working-directory: rormula
+    - name: Install Rormula
+      run: pip install rormula/target/wheels/rormula-0.1.0-cp39-cp39-linux_x86_64.whl
     - name: Test
       run: pytest test
