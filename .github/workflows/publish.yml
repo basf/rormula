@@ -94,6 +94,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           command: sdist
+          working-directory: rormula
           args: --out dist
       - name: Upload sdist
         uses: actions/upload-artifact@v3
