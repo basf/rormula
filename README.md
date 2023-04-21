@@ -91,7 +91,7 @@ We have separated categorical and numerical data beforehand. If we let rormula d
 Rormula took 0.0487s
 Formulaic took 0.7699s
 ```
-Rormula returns a list of column names and the data as Numpy array. If we want a Pandas as result dataframe we obtain
+Rormula returns a list of column names and the data as Numpy array. If we want a Pandas dataframe as result we obtain
 ```
 Rormula took 0.0744s
 Formulaic took 0.7639s
