@@ -10,9 +10,9 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: CPython",
 ]
 dependencies = ["pandas"]
-license = {file = "LICENSE"}
+license = {file = "rormula/LICENSE"}
 description = "Formula parser and evaluator for Wilkinson notation"
-readme = "README.md"
+readme = "rormula/README.md"
 [project.urls]
 repository = "github.com/basf/rormula"
 homepage = "github.com/basf/rormula"
