@@ -30,7 +30,7 @@ pub type RoResult<U> = Result<U, RoErr>;
 /// Creates an [`RoError`](RoError) with a formatted message.
 /// ```rust
 /// # use std::error::Error;
-/// use rormula::{roerr, {result::RoErr}};
+/// use rormula_rs::{roerr, {result::RoErr}};
 /// # fn main() -> Result<(), Box<dyn Error>> {
 /// assert_eq!(roerr!("some error {}", 1), RoErr::new(format!("some error {}", 1).as_str()));
 /// # Ok(())
