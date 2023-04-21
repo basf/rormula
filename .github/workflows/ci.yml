@@ -35,7 +35,5 @@ jobs:
       with:
         command: develop
         working-directory: rormula
-    - name: Install Rormula
-      run: pip install rormula/target/wheels/rormula-0.1.0-cp39-cp39-linux_x86_64.whl
     - name: Test
       run: pytest test
