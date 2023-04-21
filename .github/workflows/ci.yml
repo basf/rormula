@@ -35,5 +35,7 @@ jobs:
       with:
         command: develop
         working-directory: rormula
+    - name: Install pytest
+      run: pip3 install pytest
     - name: Test
       run: pytest test
