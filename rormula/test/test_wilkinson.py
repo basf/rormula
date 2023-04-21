@@ -172,4 +172,4 @@ def test_separated():
 
 
 if __name__ == "__main__":
-    test_separated()
+    test_num_cat()
