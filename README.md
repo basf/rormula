@@ -1,11 +1,10 @@
 # Rormula
 
-Rormula uses the Wilkinson notation to create model matrices. Additionally it can also be used in a similar way like
+Rormula uses the Wilkinson notation to create model matrices often used in design of experiments. 
+Additionally it can also be used in a similar way like
 `df.eval`  where `df` is a `pd.Dataframe`. Rormula significantly faster for small matrices, 
 implemented in Rust, and still a not well tested prototype. Rormula comes with Python bindings, 
-i.e., it is usable like a normal Python module even though it is written in Rust. See the 
-[tests](test/test.py) and below for example usage.
-
+i.e., it is usable like a normal Python module.
 
 ## Getting Started
 
@@ -15,6 +14,7 @@ pip install rormula
 Currently, the supported operations are `+`, `:`, and `^`. We can add new operators easily but we have to do
 this explicitly. There
 are several options how to provide inputs and how to receive results.
+
 ```python
 import numpy as np
 import pandas as pd
@@ -33,9 +33,11 @@ mm_names, mm = ror.eval(data)
 assert isinstance(mm, np.ndarray)
 assert isinstance(mm_names, list)
 ```
+
 Keeping categorical and numerical data separated is the fastest option even if there is no categorical data. 
 The categorical data is expected to have the object-`dtype` `O`. 
 Admittedly, the current interface is rather tedious.
+
 ```python
 data = pd.DataFrame(
    data=np.random.random((100, 3)),
@@ -73,9 +75,9 @@ To run the tests, you need to have [Rust](https://www.rust-lang.org/tools/instal
    python test/test.py
    ```
 
-## First Time Measurements
+## Rough Time Measurements
 We compare Rormula to the well-established and way more mature package [Formulaic](https://github.com/matthewwardrop/formulaic).
-The [tests](test/test.py) create a formula and sample 100 random data points. The output on my machine is 
+The [tests](test/test_wilkinson.py) create a formula and sample 100 random data points. The output on my machine is 
 ```
 Rormula took 0.0040s
 Formulaic took 0.7854s
