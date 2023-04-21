@@ -1,0 +1,15 @@
+[package]
+name = "rormula-rs"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+exmex = "0.17.1"
+
+[dev-dependencies]
+numpy = "0.18.0"
+
+[features]
+print_timings = []

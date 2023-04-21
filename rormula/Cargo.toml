@@ -1,15 +1,25 @@
 [package]
 name = "rormula"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "rormula"
+crate-type = ["cdylib"]
 
 [dependencies]
-exmex = "0.17.1"
+pyo3 = { version = "0.18.1", features = ["extension-module", "generate-import-lib"] }
+numpy = "0.18.0"
+rormula-rs = { path = "../rormula-rs" }
+
+[package.metadata.maturin]
+name = "rormula._rormula"
 
 [dev-dependencies]
-numpy = "0.18.0"
+criterion = { version = "0.4", features = ["html_reports"] }
+which = "4.4.0"
 
-[features]
-print_timings = []
+[[bench]]
+name = "benchmark"
+harness = false
