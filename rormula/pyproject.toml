@@ -10,7 +10,7 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: CPython",
 ]
 dependencies = ["pandas"]
-license = "BSD-3-Clause"
+license = {text = "BSD-3-Clause"}
 description = "Formula parser and evaluator for Wilkinson notation"
 [project.urls]
 repository = "github.com/basf/rormula"
