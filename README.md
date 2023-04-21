@@ -1,5 +1,8 @@
 # Rormula
 
+[![CI](https://github.com/basf/rormula/actions/workflows/ci.yml/badge.svg)](https://github.com/basf/rormula/actions)
+[![PyPI](https://img.shields.io/pypi/v/rormula.svg?color=%2334D058)](https://pypi.org/project/rormula)
+
 Rormula uses the Wilkinson notation to create model matrices often used in design of experiments. 
 Additionally it can also be used in a similar way like
 `df.eval`  where `df` is a `pd.Dataframe`. Rormula significantly faster for small matrices, 
