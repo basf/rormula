@@ -75,6 +75,7 @@ jobs:
   #       uses: PyO3/maturin-action@v1
   #       with:
   #         target: ${{ matrix.target }}
+  #         working-directory: rormula
   #         args: --release --out dist --find-interpreter
   #         sccache: 'true'
   #     - name: Upload wheels
@@ -100,7 +101,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: wheels
-          path: dist
+          path: rormula/dist
 
   release:
     name: Release
