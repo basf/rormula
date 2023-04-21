@@ -22,6 +22,10 @@ jobs:
         working-directory: rormula
     steps:
     - uses: actions/checkout@v2
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
     - name: Install
       uses: PyO3/maturin-action@v1
       with:
@@ -29,3 +33,4 @@ jobs:
         working-directory: rormula
     - name: Test
       run: pytest test
+sist
