@@ -30,13 +30,10 @@ jobs:
       run: python3 -m venv .venv
     - name: Activate env
       run: . .venv/bin/activate
-    - name: Build Rormula
-      uses: PyO3/maturin-action@v1
-      with:
-        command: develop
-        working-directory: rormula
     - name: Install dev dependencies
       run: pip3 install -r requirements-dev.txt
+    - name: Build Rormula
+      run: maturin develop
     - name: Test
       run: pytest test
     - name: Lint
