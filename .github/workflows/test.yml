@@ -1,0 +1,36 @@
+name: Test
+on: [push, pull_request]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test-rust:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Test
+      run: cargo test --verbose
+    - name: Clippy
+      run: cargo clippy --all-features -- -D warnings 
+    - name: Fmt
+      run: cargo fmt --check
+  test-py:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rormula
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: Run CI
+      run: |
+        python3 -m venv .venv
+        . .venv/bin/activate
+        pip3 install -r requirements-dev.txt
+        maturin develop
+        pytest test
+        ruff check .
