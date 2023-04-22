@@ -2,7 +2,7 @@ from functools import partial
 from time import perf_counter
 from typing import cast
 import formulaic
-from rormula import RormulaWilkinson, SeparatedData
+from rormula import Wilkinson, SeparatedData
 import rormula as ror
 import numpy as np
 import pandas as pd
@@ -34,13 +34,13 @@ def test_numerical():
 def test_small_numerical():
     matrix = np.arange(6, dtype=np.float64).reshape((2, 3))
     data = pd.DataFrame(data=matrix, columns=["a", "b", "c"])
-    rormula = RormulaWilkinson("a+b+c")
+    rormula = Wilkinson("a+b+c")
     _, res = rormula.eval(data)
     ref = pd.concat(
         [pd.DataFrame(data=np.ones((2, 1)), columns=["Intercept"]), data], axis=1
     )
     np.allclose(res, ref)
-    rormula = RormulaWilkinson("a+b+c+a:b+c^2")
+    rormula = Wilkinson("a+b+c+a:b+c^2")
     res = rormula.eval_asdf(data)
     ref = pd.concat(
         [
@@ -59,7 +59,7 @@ def test_missing_name_in_str():
     n_rows = 6
     data = np.concatenate([get_numerical_data(n_rows), np.ones((n_rows, 1))], axis=1)
     data = pd.DataFrame(data=data, columns=cols)
-    rormula = RormulaWilkinson(formular_str)
+    rormula = Wilkinson(formular_str)
     _, M_r = rormula.eval(data)
     assert np.allclose(data.to_numpy()[:, 1], M_r[:, 2])
 
@@ -69,7 +69,7 @@ def test_missing_name_in_col():
     cols = COLS_NUMERICAL[:-1]
     data = get_numerical_data(6)[:, :-1]
     data = pd.DataFrame(data=data, columns=cols)
-    rormula = RormulaWilkinson(formular_str)
+    rormula = Wilkinson(formular_str)
     try:
         rormula.eval(data)
         assert False
@@ -90,9 +90,9 @@ def timing(f, name):
 
 
 def timing_and_test(data, formula_str):
-    rormula = RormulaWilkinson(formula_str)
+    rormula = Wilkinson(formula_str)
     # keeping data numerical and categorical data separated is faster
-    separated_data = ror.separate_numerical_categorical(data)
+    separated_data = ror.separate_num_cat(data)
     M_r = timing(partial(rormula.eval, data=separated_data), "Rormula")
 
     assert M_r is not None
@@ -118,7 +118,7 @@ def test_more_formulas():
         cols = ["alpha", "beta", "gamma", "eta", "theta", "omega"]
         data = np.random.random((100, len(cols)))
         data = pd.DataFrame(data=data, columns=cols)
-        rormula = ror.RormulaWilkinson(formula_str)
+        rormula = Wilkinson(formula_str)
         M_r = rormula.eval_asdf(data)
         a = extract_reference(data)
         b = extract_result(M_r)
@@ -165,7 +165,7 @@ def test_separated():
         categorical_cols=[],
         categorical_data=np.zeros((100, 0), dtype="O"),
     )
-    rormula = RormulaWilkinson("alpha + beta + alpha:gamma")
+    rormula = Wilkinson("alpha + beta + alpha:gamma")
     names, mm = rormula.eval(separated_data)
     assert names == ["Intercept", "alpha", "beta", "alpha:gamma"]
     assert mm.shape == (100, 4)

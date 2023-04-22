@@ -1,7 +1,7 @@
 from typing import List, NamedTuple, Optional, Sequence, Tuple
 import numpy as np
 
-class RormulaWilkinson:
+class Wilkinson:
     pass
 
 class SeparatedData(NamedTuple):
@@ -11,9 +11,9 @@ class SeparatedData(NamedTuple):
     categorical_data: np.ndarray
 
 
-def parse_wilkinson(s: str) -> RormulaWilkinson: ...
+def parse_wilkinson(s: str) -> Wilkinson: ...
 def eval_wilkinson(
-    ror: RormulaWilkinson,
+    ror: Wilkinson,
     numerical_data: np.ndarray,
     numerical_cols: Sequence[str],
     cat_data: np.ndarray,
@@ -21,12 +21,12 @@ def eval_wilkinson(
     skip_names: bool = False,
 ) -> Tuple[Optional[List[str]], np.ndarray]: ...
 
-class RormulaArithmetic:
+class Arithmetic:
     pass
 
-def parse_arithmetic(s: str) -> RormulaArithmetic: ...
+def parse_arithmetic(s: str) -> Arithmetic: ...
 def eval_arithmetic(
-    ror: RormulaArithmetic,
+    ror: Arithmetic,
     numerical_data: np.ndarray,
     numerical_cols: Sequence[str],
 ) -> np.ndarray: ...

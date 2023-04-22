@@ -2,7 +2,7 @@ from time import perf_counter
 import numpy as np
 import pandas as pd
 
-from rormula import RormulaArithmetic
+from rormula import Arithmetic
 
 
 def timing(f, name):
@@ -20,7 +20,7 @@ def test_arithmetic():
         data=np.random.random((100, 3)), columns=["alpha", "beta", "gamma"]
     )
     s = "beta*alpha - 1 + 2^beta + alpha / gamma"
-    rormula = RormulaArithmetic(s, "s")
+    rormula = Arithmetic(s, "s")
     df_ror = rormula.eval_asdf(df.copy())
     pd_s = f's={s.replace("^", "**")}'
     assert df_ror.shape == (100, 4)

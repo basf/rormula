@@ -11,9 +11,10 @@ class SeparatedData(NamedTuple):
     categorical_data: np.ndarray
 
 
-def separate_numerical_categorical(
+def separate_num_cat(
     data: pd.DataFrame,
 ) -> SeparatedData:
+    """Separates numerical and categorical data for faster evaluation."""
     numerical = data.select_dtypes(include="number")
     categorical = data.select_dtypes(exclude="number")
     cat_cols = categorical.columns.to_list()
@@ -29,7 +30,7 @@ def separate_numerical_categorical(
     )
 
 
-class RormulaWilkinson:
+class Wilkinson:
     def __init__(self, formula: str):
         self.ror = ror.parse_wilkinson(formula)
 
@@ -45,7 +46,7 @@ class RormulaWilkinson:
                 numerical_data,
                 categorical_cols,
                 categorical_data,
-            ) = separate_numerical_categorical(data)
+            ) = separate_num_cat(data)
 
         names, resulting_data = ror.eval_wilkinson(
             self.ror,
@@ -66,7 +67,7 @@ class RormulaWilkinson:
         return pd.DataFrame(data=resulting_data, columns=names)
 
 
-class RormulaArithmetic:
+class Arithmetic:
     def __init__(self, formula: str, name: str):
         self.ror = ror.parse_arithmetic(formula)
         self.name = name

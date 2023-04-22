@@ -22,7 +22,7 @@ fn ro_to_pyerr(e: RoErr) -> PyErr {
 #[pyfunction]
 fn eval_arithmetic<'py>(
     py: Python<'py>,
-    ror: &RormulaArithmetic,
+    ror: &Arithmetic,
     numerical_data: PyReadonlyArray2<f64>,
     numerical_cols: Vec<&'py str>,
 ) -> PyResult<&'py PyArray2<f64>> {
@@ -77,7 +77,7 @@ fn eval_arithmetic<'py>(
 #[pyfunction]
 fn eval_wilkinson<'py>(
     py: Python<'py>,
-    ror: &RormulaWilkinson,
+    ror: &Wilkinson,
     numerical_data: PyReadonlyArray2<f64>,
     numerical_cols: Vec<&'py str>,
     cat_data: PyReadonlyArray2<PyObject>,
@@ -181,27 +181,27 @@ fn eval_wilkinson<'py>(
 }
 
 #[pyfunction]
-fn parse_arithmetic(s: &str) -> PyResult<RormulaArithmetic> {
-    Ok(RormulaArithmetic {
+fn parse_arithmetic(s: &str) -> PyResult<Arithmetic> {
+    Ok(Arithmetic {
         expr: ExprArithmetic::parse(s).map_err(ex_to_pyerr)?,
     })
 }
 #[derive(Debug)]
 #[pyclass]
-struct RormulaArithmetic {
+struct Arithmetic {
     expr: ExprArithmetic,
 }
 
 #[derive(Debug)]
 #[pyclass]
-struct RormulaWilkinson {
+struct Wilkinson {
     expr: ExprWilkinson,
     expr_names: ExprNames,
     expr_count: ExprColCount,
 }
 #[pyfunction]
-fn parse_wilkinson(s: &str) -> PyResult<RormulaWilkinson> {
-    Ok(RormulaWilkinson {
+fn parse_wilkinson(s: &str) -> PyResult<Wilkinson> {
+    Ok(Wilkinson {
         expr: ExprWilkinson::parse(s).map_err(ex_to_pyerr)?,
         expr_names: ExprNames::parse(s).map_err(ex_to_pyerr)?,
         expr_count: ExprColCount::parse(s).map_err(ex_to_pyerr)?,
@@ -214,7 +214,7 @@ fn _rormula(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(eval_wilkinson, m)?)?;
     m.add_function(wrap_pyfunction!(parse_arithmetic, m)?)?;
     m.add_function(wrap_pyfunction!(eval_arithmetic, m)?)?;
-    m.add_class::<RormulaWilkinson>()?;
-    m.add_class::<RormulaArithmetic>()?;
+    m.add_class::<Wilkinson>()?;
+    m.add_class::<Arithmetic>()?;
     Ok(())
 }

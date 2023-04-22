@@ -22,10 +22,10 @@ are several options how to provide inputs and how to receive results.
 ```python
 import numpy as np
 import pandas as pd
-from rormula import RormulaWilkinson, SeparatedData
+from rormula import Wilkinson, SeparatedData
 data_np = np.random.random((10, 2))
 data = pd.DataFrame(data=data_np, columns=["a", "b"])
-ror = RormulaWilkinson("a+b+a:b")
+ror = Wilkinson("a+b+a:b")
 
 # option 1 returns the model matrix as pandas dataframe
 mm_df = ror.eval_asdf(data)
@@ -53,7 +53,7 @@ separated_data = SeparatedData(
    categorical_cols=[],
    categorical_data=np.zeros((100, 0), dtype="O"),
 )
-ror = RormulaWilkinson("alpha + beta + alpha:gamma")
+ror = Wilkinson("alpha + beta + alpha:gamma")
 names, mm = ror.eval(separated_data)
 assert names == ["Intercept", "alpha", "beta", "alpha:gamma"]
 assert mm.shape == (100, 4)
