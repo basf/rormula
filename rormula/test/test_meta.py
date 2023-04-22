@@ -15,6 +15,7 @@ def test_version():
 
 
 def test_readme():
+    os.system('which python')
     files_under_test = ["../README.md", "README-pypi.md"]
     code_block_start = "```python"
     code_block_end = "```"
