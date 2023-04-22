@@ -15,7 +15,6 @@ def test_version():
 
 
 def test_readme():
-    os.system('which python')
     files_under_test = ["../README.md", "README-pypi.md"]
     code_block_start = "```python"
     code_block_end = "```"
@@ -33,8 +32,6 @@ def test_readme():
             with open(tmpfile, "w") as f:
                 f.write(codeblocks)
             exit_code = os.system(f"{sys.executable} {tmpfile}")
-            print("running test on blocks with")
-            print(sys.executable)
         finally:
             os.remove(tmpfile)
         assert exit_code == 0
