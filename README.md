@@ -17,7 +17,8 @@ pip install rormula
 ```
 Currently, the supported operations are `+`, `:`, and `^`. We can add new operators easily but we have to do
 this explicitly. There
-are several options how to provide inputs and how to receive results.
+are different options how to receive results and provide inputs.
+The result can either be a Pandas dataframe or a list of names and a Numpy array.
 
 ```python
 import numpy as np
@@ -38,7 +39,7 @@ assert isinstance(mm, np.ndarray)
 assert isinstance(mm_names, list)
 ```
 
-Keeping categorical and numerical data separated is the fastest option even if there is no categorical data. 
+Regarding inputs, the fastest option is to use the interface with separated categorical and numerical data, even if there is no categorical data. 
 The categorical data is expected to have the object-`dtype` `O`. 
 Admittedly, the current interface is rather tedious.
 
@@ -65,20 +66,19 @@ To run the tests, you need to have [Rust](https://www.rust-lang.org/tools/instal
 
 ### Python Tests
 
-Further:
-0. Go to the directory of the Python package
+1. Go to the directory of the Python package
    ```
    cd rormula
    ```
-1. Install dev dependencies via
+2. Install dev dependencies via
    ```
    pip install -r requirements.txt
    ```
-2. Create a development build of Rormula
+3. Create a development build of Rormula
    ```
    maturin develop --release
    ```
-3. Run 
+4. Run 
    ```
    python test/test.py
    ```
