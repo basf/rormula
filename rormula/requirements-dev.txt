@@ -1,0 +1,6 @@
+pytest
+formulaic 
+ruff 
+pandas
+tomli
+maturin

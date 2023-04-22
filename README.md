@@ -61,23 +61,34 @@ assert mm.shape == (100, 4)
 
 ## Contribute
 
-To run the tests, you need to have [Rust](https://www.rust-lang.org/tools/install) installed. Further:
-1. Install Formulaic via
+To run the tests, you need to have [Rust](https://www.rust-lang.org/tools/install) installed. 
+
+### Python Tests
+
+Further:
+0. Go to the directory of the Python package
    ```
-   pip install formulaic pytest maturin
+   cd rormula
    ```
-2. Install Maturin
+1. Install dev dependencies via
    ```
-   pip install maturin
+   pip install -r requirements.txt
    ```
-3. Create a development build of Rormula
+2. Create a development build of Rormula
    ```
    maturin develop --release
    ```
-4. Run 
+3. Run 
    ```
    python test/test.py
    ```
+
+### Rust Tests
+Run
+```
+cargo test
+```
+from the project's root.
 
 ## Rough Time Measurements
 We compare Rormula to the well-established and way more mature package [Formulaic](https://github.com/matthewwardrop/formulaic).

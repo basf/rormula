@@ -17,6 +17,7 @@ keywords = ["design of experiments", "Wilkinson", "parser", "eval", "doe"]
 authors = [
   {name = "Behrang Shafei", email = "behrang.shafei@basf.com"}
 ]
+readme = "README-pypi.md"
 [project.urls]
 repository = "https://github.com/basf/rormula"
 homepage = "https://github.com/basf/rormula"

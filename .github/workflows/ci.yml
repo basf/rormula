@@ -36,7 +36,7 @@ jobs:
         command: develop
         working-directory: rormula
     - name: Install dev dependencies
-      run: pip3 install pytest formulaic ruff pandas
+      run: pip3 install -r requirements-dev.txt
     - name: Test
       run: pytest test
     - name: Lint
