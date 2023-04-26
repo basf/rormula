@@ -87,5 +87,8 @@ class Arithmetic:
 
     def eval_asdf(self, data: pd.DataFrame):
         resulting_data = self.eval(data)
-        data[self.name] = resulting_data
+        if resulting_data.shape[0] == data.shape[0]:
+            data[self.name] = resulting_data
+        else:
+            data = pd.DataFrame(data = resulting_data, columns=[self.name])
         return data

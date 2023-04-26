@@ -66,6 +66,14 @@ fn eval_arithmetic<'py>(
 
                 Ok(res)
             }
+            Value::RowInds(row_inds) => {
+                let mut pya = Array2::<f64>::ones([row_inds.len(), 1]);
+                for row in 0..row_inds.len() {
+                    pya[(row, 0)] = row_inds[row] as f64;
+                }
+                let res = pya.into_pyarray(py);
+                Ok(res)
+            }
             Value::Cats(_) => Err(PyValueError::new_err("result cannot be cat".to_string())),
             Value::Scalar(s) => Err(PyValueError::new_err(format!(
                 "result cannot be skalar but got {s}"
@@ -172,6 +180,7 @@ fn eval_wilkinson<'py>(
                 Ok((names, res))
             }
             Value::Cats(_) => Err(PyValueError::new_err("result cannot be cat".to_string())),
+            Value::RowInds(_) => Err(PyValueError::new_err("result cannot be row indices".to_string())),
             Value::Scalar(s) => Err(PyValueError::new_err(format!(
                 "result cannot be skalar but got {s}"
             ))),

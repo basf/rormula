@@ -6,6 +6,7 @@ use crate::{array::Array2d, result::RoErr, roerr};
 pub enum Value {
     /// Vec<String> are the names of the columns, i.e., the resulting names of the new features
     Array(Array2d),
+    RowInds(Vec<usize>),
     /// String is the name of the categorical
     Cats(Vec<String>),
     Scalar(f64),
