@@ -40,10 +40,11 @@ def test_arithmetic():
     data[7, :] = 2.5
     df = pd.DataFrame(data=data, columns=["alpha", "beta", "gamma"])
     s = "beta|alpha==2.5"
-    rormula = Arithmetic(s, s)
+    rormula = Arithmetic(s, "reduced")
     res = rormula.eval_asdf(df)
     assert res.shape == (2, 1)
     assert np.allclose(res, 2.5)
+    print(res)
     s = "beta|alpha>=2.5"
     rormula = Arithmetic(s, s)
     res = rormula.eval_asdf(df)

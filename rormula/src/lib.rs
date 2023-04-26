@@ -180,7 +180,9 @@ fn eval_wilkinson<'py>(
                 Ok((names, res))
             }
             Value::Cats(_) => Err(PyValueError::new_err("result cannot be cat".to_string())),
-            Value::RowInds(_) => Err(PyValueError::new_err("result cannot be row indices".to_string())),
+            Value::RowInds(_) => Err(PyValueError::new_err(
+                "result cannot be row indices".to_string(),
+            )),
             Value::Scalar(s) => Err(PyValueError::new_err(format!(
                 "result cannot be skalar but got {s}"
             ))),

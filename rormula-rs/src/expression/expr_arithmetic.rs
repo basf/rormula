@@ -46,7 +46,7 @@ pub fn op_unary(a: Value, op: &impl Fn(f64) -> f64) -> Value {
     }
 }
 
-fn compare_vecs<T>(v1: &Vec<T>, v2: &Vec<T>, f: impl Fn(&T, &T) -> bool) -> Vec<usize>
+fn compare_slices<T>(v1: &[T], v2: &[T], f: impl Fn(&T, &T) -> bool) -> Vec<usize>
 where
     T: PartialEq,
 {
@@ -119,10 +119,10 @@ macro_rules! op_compare {
                     .collect(),
             ),
             (Value::Cats(c1), Value::Cats(c2)) => {
-                Value::RowInds(compare_vecs(&c1, &c2, $comp_exact))
+                Value::RowInds(compare_slices(&c1, &c2, $comp_exact))
             }
             (Value::RowInds(ri1), Value::RowInds(ri2)) => {
-                Value::RowInds(compare_vecs(&ri1, &ri2, $comp_exact))
+                Value::RowInds(compare_slices(&ri1, &ri2, $comp_exact))
             }
             (Value::Error(e), _) => Value::Error(e),
             (_, Value::Error(e)) => Value::Error(e),
@@ -318,7 +318,7 @@ fn test() {
     let res = op_compare_lt(Value::Array(a.clone()), Value::Array(b.clone()));
     let a_ref = Value::RowInds(vec![0, 2, 3, 4, 5]);
     assert_eq!(res, a_ref);
-    
+
     let res = op_compare_equals(Value::Scalar(1.0), Value::Array(b.clone()));
     let a_ref = Value::RowInds(vec![1]);
     assert_eq!(res, a_ref);

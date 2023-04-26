@@ -60,6 +60,48 @@ assert names == ["Intercept", "alpha", "beta", "alpha:gamma"]
 assert mm.shape == (100, 4)
 ```
 
+## Getting Started with Columns Arithmetics
+
+You can calculate with columns of a Pandas dataframes.
+```python
+df = pd.DataFrame(
+   data=np.random.random((100, 3)), columns=["alpha", "beta", "gamma"]
+)
+s = "beta*alpha - 1 + 2^beta + alpha / gamma"
+rormula = Arithmetic(s, "s")
+df_ror = rormula.eval_asdf(df.copy())
+pd_s = f's={s.replace("^", "**")}'
+assert df_ror.shape == (100, 4)
+assert np.allclose(df_ror, df.eval(pd_s))
+```
+To evaluate a string as data frame there is
+`Arithmetic.eval_asdf` which puts the result into your input dataframe.
+`Arithmetic.eval` returns the column as 2d-Numpy array with 1 column. In contrast to
+`pd.DataFrame.eval` the method `Arithmetic.eval` does not execute any Python code but understands
+a list of predefined operators. Besides the usual suspects such as `+`, `-`, and `^` the operators contain
+a conditioned restriction. You can use a comparison operator like `==` which compares float values with
+a tolerance. The result of `==` is internally a list of indices that can be used to reduce the columns with `|`, see
+the following example. 
+```python
+data = np.ones((100, 3))
+data[5, :] = 2.5
+data[7, :] = 2.5
+df = pd.DataFrame(data=data, columns=["alpha", "beta", "gamma"])
+s = "beta|alpha==2.5"
+rormula = Arithmetic(s, s)
+res = rormula.eval_asdf(df)
+assert res.shape == (2, 1)
+assert np.allclose(res, 2.5)
+print(res)
+```
+The output is
+```
+   reduced
+0      2.5
+1      2.5
+```
+Since the resulting dataframe has less rows than the input dataframe, the result is a new dataframe with a single column.
+
 ## Contribute
 
 To run the tests, you need to have [Rust](https://www.rust-lang.org/tools/install) installed. 
@@ -91,8 +133,8 @@ cargo test
 from the project's root.
 
 ## Rough Time Measurements
-We compare Rormula to the well-established and way more mature package [Formulaic](https://github.com/matthewwardrop/formulaic).
-The [tests](test/test_wilkinson.py) create a formula and sample 100 random data points. The output on my machine is 
+We compare the Rormula to the well-established and way more mature package [Formulaic](https://github.com/matthewwardrop/formulaic).
+The [tests](test/test_wilkinson.py) create a formula in Wilkinson notation and sample 100 random data points. The output on my machine is 
 ```
 Rormula took 0.0040s
 Formulaic took 0.7854s
