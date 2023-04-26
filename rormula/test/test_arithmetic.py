@@ -34,13 +34,11 @@ def test_arithmetic():
     timing(lambda: df.eval(pd_s), "eval_pd")
     timing(lambda: rormula.eval(df), "eval_asdf")
     timing(lambda: df.eval(pd_s.split("=")[1]), "eval_pd")
-    
+
     data = np.ones((100, 3))
     data[5, :] = 2.5
     data[7, :] = 2.5
-    df = pd.DataFrame(
-        data=data, columns=["alpha", "beta", "gamma"]
-    )
+    df = pd.DataFrame(data=data, columns=["alpha", "beta", "gamma"])
     s = "beta|alpha==2.5"
     rormula = Arithmetic(s, s)
     res = rormula.eval_asdf(df)
@@ -55,7 +53,6 @@ def test_arithmetic():
     rormula = Arithmetic(s, s)
     res = rormula.eval_asdf(df)
     assert res.shape == (98, 1)
-
 
 
 if __name__ == "__main__":
