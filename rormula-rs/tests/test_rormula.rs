@@ -59,15 +59,12 @@ fn test_arithmetic() {
     let expr_ref = ExprArithmetic::parse(s_ref).unwrap();
     let rev_val = expr_ref.eval(&[Value::Array(Array2d::ones(5, 1))]).unwrap();
     assert_eq!(res, rev_val);
-    
-
-    
 }
 #[test]
 fn test_restrict() {
     let cols = ["first_var", "second.var"];
     // - has higher precedence than ==
-    
+
     let s = "(first_var|{second.var}==1.0) - (first_var|{second.var}==1.0)";
 
     let mut vars = (0..cols.len())
