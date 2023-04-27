@@ -86,7 +86,7 @@ pub fn op_scalar(a: Value, b: Value, op: &impl Fn(f64, f64) -> f64) -> Value {
     match (a, b) {
         (Value::Array(mut arr), Value::Scalar(sc)) => arr_vs_sc(&mut arr, sc),
         (Value::Scalar(sc), Value::Array(mut arr)) => sc_vs_arr(sc, &mut arr),
-        _ => Value::Error("power can only be applied to matrix and skalar".to_string()),
+        _ => Value::Error("scalar op can only be applied to matrix and scalar".to_string()),
     }
 }
 

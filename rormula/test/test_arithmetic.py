@@ -44,7 +44,6 @@ def test_arithmetic():
     res = rormula.eval_asdf(df)
     assert res.shape == (2, 1)
     assert np.allclose(res, 2.5)
-    print(res)
     s = "beta|alpha>=2.5"
     rormula = Arithmetic(s, s)
     res = rormula.eval_asdf(df)
@@ -54,6 +53,13 @@ def test_arithmetic():
     rormula = Arithmetic(s, s)
     res = rormula.eval_asdf(df)
     assert res.shape == (98, 1)
+    
+    s = "((first_var|{second.var}==5.0) - (first_var|{second.var}==2.5)) / 4.0"
+    data[7, :] = 5.0
+    df = pd.DataFrame(data=data[:10, :2], columns=["first_var", "second.var"])
+    rormula = Arithmetic(s, "reduced")
+    res = rormula.eval_asdf(df)
+    assert np.allclose(res.to_numpy().item(), (5.0 - 2.5) / 4.0)
 
 
 if __name__ == "__main__":

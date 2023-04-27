@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-exmex = "0.17.1"
+exmex = "0.17.3"
 
 [dev-dependencies]
 numpy = "0.18.0"

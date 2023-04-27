@@ -13,7 +13,13 @@ fn apply_op(mut a: Value, mut b: Value, op: &impl Fn(f64, f64) -> f64) -> Value 
     let res = match (&mut a, &mut b) {
         (Value::Array(a), Value::Array(b)) => {
             ops_common::op_componentwise_array(mem::take(a), mem::take(b), op).map(Value::Array)
-        }
+        },
+        (_, Value::Error(e)) => {
+            Ok(Value::Error(mem::take(e)))
+        },
+        (Value::Error(e), _) => {
+            Ok(Value::Error(mem::take(e)))
+        },
         _ => Ok(ops_common::op_scalar(a, b, op)),
     };
     match res {
@@ -92,6 +98,7 @@ fn floats_lt(a: f64, b: f64, epsilon: f64) -> bool {
 
 macro_rules! op_compare {
     ($a:expr, $b:expr, $comp_exact:expr, $comp_float:expr) => {
+        
         match ($a, $b) {
             (Value::Scalar(s), Value::Array(a)) => Value::RowInds(
                 a.data
@@ -126,8 +133,9 @@ macro_rules! op_compare {
             }
             (Value::Error(e), _) => Value::Error(e),
             (_, Value::Error(e)) => Value::Error(e),
-            _ => Value::RowInds(vec![]),
+            _ => Value::Error("cannot compare values".to_string()),
         }
+        
     };
 }
 
@@ -150,14 +158,26 @@ pub fn op_compare_equals(a: Value, b: Value) -> Value {
 pub fn op_restrict(a: Value, b: Value) -> Value {
     match (a, b) {
         (Value::Array(a), Value::RowInds(ris)) => {
-            let data = ris.iter().map(|i| a.data[*i]).collect::<Vec<f64>>();
-            let n_rows = data.len();
-            Value::Array(Array2d {
-                data,
-                n_rows,
-                n_cols: 1,
-                ..a
-            })
+            let max = ris.iter().max();
+            if let Some(max) = max {
+                if *max >= a.n_rows {
+                    return Value::Error(format!(
+                        "row index out of bounds: {} >= {}",
+                        max, a.n_rows
+                    ));
+                } else {
+                    let data = ris.iter().map(|ri| a.data[*ri]).collect::<Vec<f64>>();
+                    let n_rows = data.len();
+                    Value::Array(Array2d {
+                        data,
+                        n_rows,
+                        n_cols: 1,
+                        ..a
+                    })
+                }
+            } else {
+                Value::Array(Array2d::ones(0, a.n_cols))
+            }
         }
         (Value::Cats(mut c), Value::RowInds(ris)) => {
             Value::Cats(ris.iter().map(|i| mem::take(&mut c[*i])).collect())

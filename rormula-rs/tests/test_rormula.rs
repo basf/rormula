@@ -6,7 +6,7 @@ use rormula_rs::{
 };
 
 #[test]
-fn test_rormula() {
+fn test_wilkinson() {
     let n1 = NameValue::Array(vec!["n".to_string()]);
     let v1 = Value::Array(Array2d::from_iter([0.1, 0.2, 0.3].iter(), 3, 1).unwrap());
     let n2 = NameValue::Array(vec!["o".to_string()]);
@@ -59,4 +59,40 @@ fn test_arithmetic() {
     let expr_ref = ExprArithmetic::parse(s_ref).unwrap();
     let rev_val = expr_ref.eval(&[Value::Array(Array2d::ones(5, 1))]).unwrap();
     assert_eq!(res, rev_val);
+    
+
+    
+}
+#[test]
+fn test_restrict() {
+    let cols = ["first_var", "second.var"];
+    // - has higher precedence than ==
+    
+    let s = "(first_var|{second.var}==1.0) - (first_var|{second.var}==1.0)";
+
+    let mut vars = (0..cols.len())
+        .map(|_| Value::Array(Array2d::ones(5, 1)))
+        .collect::<Vec<_>>();
+    vars[0] = Value::Array(Array2d::zeros(5, 1));
+    let exp = ExprArithmetic::parse(s).unwrap();
+    println!("{:?}", exp.var_indices_ordered());
+    let res = exp.eval_vec(vars).unwrap();
+    println!("{:?}", res);
+    if let Value::Array(a) = res {
+        assert_eq!(a.data, vec![0.0; 5]);
+    } else {
+        assert!(false);
+    }
+    let s = "first_var|{second.var}==1.0 - first_var|{second.var}==1.0";
+
+    let vars = (0..cols.len())
+        .map(|_| Value::Array(Array2d::ones(5, 1)))
+        .collect::<Vec<_>>();
+    let exp = ExprArithmetic::parse(s).unwrap();
+    let res = exp.eval_vec(vars).unwrap();
+    if let Value::Error(_) = res {
+        assert!(true);
+    } else {
+        assert!(false);
+    }
 }
