@@ -64,6 +64,10 @@ assert mm.shape == (100, 4)
 
 You can calculate with columns of a Pandas dataframes.
 ```python
+import numpy as np
+import pandas as pd
+from rormula import Arithmetic
+
 df = pd.DataFrame(
    data=np.random.random((100, 3)), columns=["alpha", "beta", "gamma"]
 )
