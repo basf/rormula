@@ -1,5 +1,5 @@
-//! On Windows with Conda the Benchmarks might not work due to 
-//! https://github.com/ContinuumIO/anaconda-issues/issues/11439, 
+//! On Windows with Conda the Benchmarks might not work due to
+//! https://github.com/ContinuumIO/anaconda-issues/issues/11439,
 //! see https://github.com/PyO3/pyo3/issues/1554
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};

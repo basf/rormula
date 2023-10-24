@@ -118,8 +118,6 @@ def timing_and_test(data, formula_str):
     formula = formulaic.Formula(formula_str.replace("^", "**"))
     M_f = timing(partial(formula.get_model_matrix, data=data), "Formulaic")
 
-    deri = formula.differentiate("a", "b", use_sympy=False)
-    deri.get_model_matrix(data=data)
     assert M_f is not None
     assert np.allclose(cast(pd.Series, M_f["e:f"]), M_r["e:f"])
     assert np.allclose(cast(pd.Series, M_f["f"]), M_r["f"])
