@@ -79,10 +79,12 @@ def test_missing_name_in_col():
         assert False
 
 
-def timing(f, name):
-    t = perf_counter()
+def timing(f, name, n_warmups=10, n_runs=100):
     res = None
-    for _ in range(100):
+    for _ in range(n_warmups):
+        res = f()
+    t = perf_counter()
+    for _ in range(n_runs):
         res = f()
     t1 = perf_counter()
     print(f"{name} took {t1 - t:0.4f}s")
@@ -103,6 +105,8 @@ def timing_and_test(data, formula_str):
     formula = formulaic.Formula(formula_str.replace("^", "**"))
     M_f = timing(partial(formula.get_model_matrix, data=data), "Formulaic")
 
+    deri = formula.differentiate("a", "b", use_sympy=False)
+    deri.get_model_matrix(data=data)
     assert M_f is not None
     assert np.allclose(cast(pd.Series, M_f["e:f"]), M_r["e:f"])
     assert np.allclose(cast(pd.Series, M_f["f"]), M_r["f"])
@@ -172,4 +176,4 @@ def test_separated():
 
 
 if __name__ == "__main__":
-    test_num_cat()
+    test_numerical()
