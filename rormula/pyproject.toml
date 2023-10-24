@@ -1,5 +1,5 @@
 [build-system]
-requires = ["maturin>=0.14,<0.15"]
+requires = ["maturin>=1.0,<2.0"]
 build-backend = "maturin"
 
 [project]
@@ -24,5 +24,6 @@ homepage = "https://github.com/basf/rormula"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
+module-name = "rormula._rormula"
 [tool.ruff]
 ignore = ["E731"]

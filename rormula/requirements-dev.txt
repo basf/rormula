@@ -3,4 +3,4 @@ formulaic
 ruff 
 pandas
 tomli
-maturin
+maturin>=1.0

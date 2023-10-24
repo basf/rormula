@@ -19,9 +19,6 @@ rormula-rs = { path = "../rormula-rs" }
 extension-module = ["pyo3/extension-module"]
 default = ["extension-module"]
 
-[package.metadata.maturin]
-name = "rormula._rormula"
-
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["html_reports"] }
 which = "5.0.0"
