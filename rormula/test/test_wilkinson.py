@@ -40,6 +40,19 @@ def test_small_numerical():
         [pd.DataFrame(data=np.ones((2, 1)), columns=["Intercept"]), data], axis=1
     )
     np.allclose(res, ref)
+    rormula = Wilkinson("(a+b):(a+c)")
+    res = rormula.eval_asdf(data)
+    ref_ = pd.concat(
+        [
+            pd.Series(data=[1, 1], name="Intercept"),
+            pd.Series(data=[0, 9], name="a:a"),
+            pd.Series(data=[0, 12], name="b:a"),
+            pd.Series(data=[0, 15], name="a:c"),
+            pd.Series(data=[2, 20], name="b:c"),
+        ],
+        axis=1,
+    )
+    np.allclose(res, ref_)
     rormula = Wilkinson("a+b+c+a:b+c^2")
     res = rormula.eval_asdf(data)
     ref = pd.concat(
@@ -176,4 +189,4 @@ def test_separated():
 
 
 if __name__ == "__main__":
-    test_numerical()
+    test_small_numerical()
