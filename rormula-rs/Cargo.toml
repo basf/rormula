@@ -6,10 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-exmex = "0.17.3"
+exmex = "0.18.0"
 
 [dev-dependencies]
-numpy = "0.18.0"
+numpy = "0.20.0"
 
 [features]
 print_timings = []

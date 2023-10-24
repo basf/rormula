@@ -1,3 +1,7 @@
+//! On Windows with Conda the Benchmarks might not work due to 
+//! https://github.com/ContinuumIO/anaconda-issues/issues/11439, 
+//! see https://github.com/PyO3/pyo3/issues/1554
+
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use numpy::{
     ndarray::{concatenate, Array1, Array2, Axis},
@@ -8,32 +12,8 @@ use pyo3::PyResult;
 use rormula_rs::array::Array2d;
 use std::mem;
 
-/// Workaround from https://github.com/PyO3/pyo3/issues/1554
 pub fn initialize_python() -> PyResult<()> {
-    // Due to https://github.com/ContinuumIO/anaconda-issues/issues/11439,
-    // we first need to set PYTHONHOME. To do so, we will look for whatever
-    // directory on PATH currently has python.exe.
-    let python_exe = which::which("python").unwrap();
-    let python_home = python_exe.parent().unwrap();
-
-    // The Python C API uses null-terminated UTF-16 strings, so we need to
-    // encode the path into that format here.
-    // We could use the Windows FFI modules provided in the standard library,
-    // but we want this to work cross-platform, so we do things more manually.
-    let mut python_home = python_home
-        .to_str()
-        .unwrap()
-        .encode_utf16()
-        .collect::<Vec<u16>>();
-    python_home.push(0);
-    unsafe {
-        pyo3::ffi::Py_SetPythonHome(python_home.as_ptr());
-    }
-
-    // Once we've set the configuration we need, we can go on and manually
-    // initialize PyO3.
     pyo3::prepare_freethreaded_python();
-
     Ok(())
 }
 
