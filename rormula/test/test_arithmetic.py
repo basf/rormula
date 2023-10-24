@@ -53,7 +53,7 @@ def test_arithmetic():
     rormula = Arithmetic(s, s)
     res = rormula.eval_asdf(df)
     assert res.shape == (98, 1)
-    
+
     s = "((first_var|{second.var}==5.0) - (first_var|{second.var}==2.5)) / 4.0"
     data[7, :] = 5.0
     df = pd.DataFrame(data=data[:10, :2], columns=["first_var", "second.var"])

@@ -129,7 +129,6 @@ def timing_and_test(data, formula_str):
 
 def test_more_formulas():
     def test(formula_str, extract_reference, extract_result):
-
         cols = ["alpha", "beta", "gamma", "eta", "theta", "omega"]
         data = np.random.random((100, len(cols)))
         data = pd.DataFrame(data=data, columns=cols)

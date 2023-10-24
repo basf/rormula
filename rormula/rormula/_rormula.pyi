@@ -10,7 +10,6 @@ class SeparatedData(NamedTuple):
     categorical_cols: List[str]
     categorical_data: np.ndarray
 
-
 def parse_wilkinson(s: str) -> Wilkinson: ...
 def eval_wilkinson(
     ror: Wilkinson,

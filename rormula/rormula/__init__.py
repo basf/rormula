@@ -37,7 +37,6 @@ class Wilkinson:
     def eval(
         self, data: Union[pd.DataFrame, SeparatedData], skip_names: bool = False
     ) -> Tuple[List[str], np.ndarray]:
-
         if isinstance(data, SeparatedData):
             numerical_cols, numerical_data, categorical_cols, categorical_data = data
         else:
@@ -73,7 +72,6 @@ class Arithmetic:
         self.name = name
 
     def eval(self, data: pd.DataFrame) -> np.ndarray:
-
         numerical_cols = data.columns.to_list()
         numerical_data = data.to_numpy()
 
@@ -90,5 +88,5 @@ class Arithmetic:
         if resulting_data.shape[0] == data.shape[0]:
             data[self.name] = resulting_data
         else:
-            data = pd.DataFrame(data = resulting_data, columns=[self.name])
+            data = pd.DataFrame(data=resulting_data, columns=[self.name])
         return data
