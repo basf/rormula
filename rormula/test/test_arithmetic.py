@@ -72,6 +72,11 @@ def test_scalar_scalar():
     res = rormula.eval_asdf(df)
     ref = df.eval(s)
     np.allclose(res[name].to_numpy(), ref.values)
+    s = "5/3"
+    rormula = Arithmetic(s, name)
+    res = rormula.eval_asdf(df)
+    ref = df.eval(s)    
+    np.allclose(res[name].to_numpy(), ref)
 
 
 if __name__ == "__main__":

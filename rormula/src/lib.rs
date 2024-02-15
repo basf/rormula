@@ -74,10 +74,8 @@ fn eval_arithmetic<'py>(
                 let res = pya.into_pyarray(py);
                 Ok(res)
             }
+            Value::Scalar(s) => Ok(Array2::<f64>::from_elem((1, 1), s).into_pyarray(py)),
             Value::Cats(_) => Err(PyValueError::new_err("result cannot be cat".to_string())),
-            Value::Scalar(s) => Err(PyValueError::new_err(format!(
-                "result cannot be skalar but got {s}"
-            ))),
             Value::Error(e) => Err(PyValueError::new_err(format!("computation failed, {e:?}"))),
         }
     }
