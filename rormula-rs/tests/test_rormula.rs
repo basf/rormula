@@ -59,6 +59,13 @@ fn test_arithmetic() {
     let expr_ref = ExprArithmetic::parse(s_ref).unwrap();
     let rev_val = expr_ref.eval(&[Value::Array(Array2d::ones(5, 1))]).unwrap();
     assert_eq!(res, rev_val);
+    let s = "4*3";
+    let expr = ExprArithmetic::parse(s).unwrap();
+    let res = expr.eval_vec(vec![]).unwrap();
+    let sc_ref = Value::Scalar(12.0);
+    assert_eq!(res, sc_ref);
+    let s = "5/3 * alpha / beta * (0.2 / 200.0 / (29.22+gamma+epsilon+phi) / 7500)";
+    let _ = ExprArithmetic::parse(s).unwrap();
 }
 #[test]
 fn test_restrict() {

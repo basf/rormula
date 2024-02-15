@@ -83,10 +83,15 @@ pub fn op_scalar(a: Value, b: Value, op: &impl Fn(f64, f64) -> f64) -> Value {
         }
         Value::Array(mem::take(arr))
     };
+    let sc_vs_sc = |sc1, sc2| Value::Scalar(op(sc1, sc2));
+
     match (a, b) {
         (Value::Array(mut arr), Value::Scalar(sc)) => arr_vs_sc(&mut arr, sc),
         (Value::Scalar(sc), Value::Array(mut arr)) => sc_vs_arr(sc, &mut arr),
-        _ => Value::Error("scalar op can only be applied to matrix and scalar".to_string()),
+        (Value::Scalar(sc1), Value::Scalar(sc2)) => sc_vs_sc(sc1, sc2),
+        _ => Value::Error(
+            "scalar op can only be applied to matrix and scalar or scalar and scalar".to_string(),
+        ),
     }
 }
 

@@ -9,7 +9,7 @@ name = "rormula"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.20.0", features = ["generate-import-lib"] }
+pyo3 = { version = "0.20.2", features = ["generate-import-lib"] }
 numpy = "0.20.0"
 rormula-rs = { path = "../rormula-rs" }
 
