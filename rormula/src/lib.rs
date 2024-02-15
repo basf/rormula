@@ -220,7 +220,7 @@ fn parse_wilkinson(s: &str) -> PyResult<Wilkinson> {
 }
 
 #[pymodule]
-fn _rormula(_py: Python, m: &PyModule) -> PyResult<()> {
+fn rormula(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(parse_wilkinson, m)?)?;
     m.add_function(wrap_pyfunction!(eval_wilkinson, m)?)?;
     m.add_function(wrap_pyfunction!(parse_arithmetic, m)?)?;

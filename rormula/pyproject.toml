@@ -24,6 +24,5 @@ homepage = "https://github.com/basf/rormula"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
-module-name = "rormula._rormula"
 [tool.ruff]
 ignore = ["E731"]

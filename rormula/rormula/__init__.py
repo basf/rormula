@@ -1,7 +1,7 @@
 from typing import List, NamedTuple, Tuple, Union
 import numpy as np
 import pandas as pd
-from rormula import _rormula as ror
+from .rormula import parse_wilkinson, eval_wilkinson, parse_arithmetic, eval_arithmetic
 
 
 class SeparatedData(NamedTuple):
@@ -32,7 +32,7 @@ def separate_num_cat(
 
 class Wilkinson:
     def __init__(self, formula: str):
-        self.ror = ror.parse_wilkinson(formula)
+        self.ror = parse_wilkinson(formula)
 
     def eval(
         self, data: Union[pd.DataFrame, SeparatedData], skip_names: bool = False
@@ -47,7 +47,7 @@ class Wilkinson:
                 categorical_data,
             ) = separate_num_cat(data)
 
-        names, resulting_data = ror.eval_wilkinson(
+        names, resulting_data = eval_wilkinson(
             self.ror,
             numerical_data,
             numerical_cols,
@@ -68,14 +68,14 @@ class Wilkinson:
 
 class Arithmetic:
     def __init__(self, formula: str, name: str):
-        self.ror = ror.parse_arithmetic(formula)
+        self.ror = parse_arithmetic(formula)
         self.name = name
 
     def eval(self, data: pd.DataFrame) -> np.ndarray:
         numerical_cols = data.columns.to_list()
         numerical_data = data.to_numpy()
 
-        resulting_data = ror.eval_arithmetic(
+        resulting_data = eval_arithmetic(
             self.ror,
             numerical_data,
             numerical_cols,
