@@ -61,13 +61,15 @@ def test_arithmetic():
     res = rormula.eval_asdf(df)
     assert np.allclose(res.to_numpy().item(), (5.0 - 2.5) / 4.0)
 
-    data = np.ones((100, 6))
+    data = np.random.random((100, 6)) * 1000
     df = pd.DataFrame(
         data=data, columns=["alpha", "beta", "gamma", "delta", "epsilon", "phi"]
     )
     s = "5/3 * alpha / beta * (0.2 / 200.0 / (29.22+gamma+epsilon+phi) / 1000)"
     rormula = Arithmetic(s, "testslash")
     res = rormula.eval_asdf(df)
+    ref = df.eval(s)
+    np.allclose(res.values, ref.values)
 
 
 if __name__ == "__main__":
