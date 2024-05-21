@@ -52,7 +52,7 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels-${{ strategy.job-index }}
+          name: wheels-linux-${{ strategy.job-index }}
           path: rormula/dist
 
   windows:
@@ -80,7 +80,7 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels-${{ strategy.job-index }}
+          name: wheels-win-${{ strategy.job-index }}
           path: rormula/dist
 
   macos:
@@ -107,7 +107,7 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels-${{ strategy.job-index }}
+          name: wheels-macos-${{ strategy.job-index }}
           path: rormula/dist
 
 
