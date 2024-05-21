@@ -153,4 +153,4 @@ Rormula returns a list of column names and the data as Numpy array. If we want a
 Rormula took 0.0744s
 Formulaic took 0.7639s
 ```
-The time is measured for 100 applications of the formula. We used a small data set with 100 rows. For more rows, e.g., 10k+, formulaic becomes competetive and better.
+The time is measured for 100 applications of the formula. We used a small data set with 100 rows. For more rows, e.g., 10k+, formulaic becomes competitive and better.
