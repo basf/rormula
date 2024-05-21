@@ -109,12 +109,15 @@ def timing_and_test(data, formula_str):
     # keeping data numerical and categorical data separated is faster
     separated_data = ror.separate_num_cat(data)
     M_r = timing(partial(rormula.eval, data=separated_data), "Rormula")
+    M_r_asdf = timing(partial(rormula.eval_asdf, data=data), "Rormula asdf")
 
     assert M_r is not None
+    assert M_r_asdf is not None
     names, M_r = M_r
     if len(names) == 0:
         return
     M_r = pd.DataFrame(data=M_r, columns=names)
+    assert np.allclose(M_r, M_r_asdf)
     formula = formulaic.Formula(formula_str.replace("^", "**"))
     M_f = timing(partial(formula.get_model_matrix, data=data), "Formulaic")
 
