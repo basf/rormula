@@ -3,6 +3,7 @@
 //! see https://github.com/PyO3/pyo3/issues/1554
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use numpy::PyArrayMethods;
 use numpy::{
     ndarray::{concatenate, Array1, Array2, Axis},
     pyo3::Python,
@@ -11,7 +12,6 @@ use numpy::{
 use pyo3::PyResult;
 use rormula_rs::array::Array2d;
 use std::mem;
-
 pub fn initialize_python() -> PyResult<()> {
     pyo3::prepare_freethreaded_python();
     Ok(())
@@ -49,7 +49,7 @@ fn compute(arr1: &mut Array2d, arr2: &Array2d) -> Array2d {
 fn criterion_benchmark(c: &mut Criterion) {
     initialize_python().unwrap();
     Python::with_gil(|py| {
-        let pyarray = PyArray2::<f64>::zeros(py, (500000, 3), false);
+        let pyarray = PyArray2::<f64>::zeros_bound(py, (500000, 3), false);
         let readonly = pyarray.readonly();
         c.bench_function("create nd", |b| {
             b.iter(|| from_pyarray_nd(black_box(&readonly)))

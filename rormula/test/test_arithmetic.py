@@ -80,4 +80,5 @@ def test_scalar_scalar():
 
 
 if __name__ == "__main__":
+    test_arithmetic()
     test_scalar_scalar()

@@ -4,10 +4,10 @@ version = "0.1.5"
 edition = "2021"
 
 [dependencies]
-exmex = "0.19.0"
+exmex = "0.20.1"
 
 [dev-dependencies]
-numpy = "0.20.0"
+numpy = "0.21.0"
 
 [features]
 print_timings = []

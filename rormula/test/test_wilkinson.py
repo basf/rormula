@@ -186,4 +186,5 @@ def test_separated():
 
 
 if __name__ == "__main__":
-    test_small_numerical()
+    test_numerical()
+    test_num_cat()

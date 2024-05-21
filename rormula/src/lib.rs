@@ -5,6 +5,7 @@ use numpy::{
 use pyo3::{
     exceptions::{PyTypeError, PyValueError},
     prelude::*,
+    types::PyList,
 };
 pub use rormula_rs::exmex::prelude::*;
 pub use rormula_rs::exmex::ExError;
@@ -19,20 +20,31 @@ fn ro_to_pyerr(e: RoErr) -> PyErr {
     PyValueError::new_err(e.msg().to_string())
 }
 
+fn find_col<'py>(cols: &Bound<'py, PyList>, needle: &str) -> Option<usize> {
+    cols.iter().position(|num_name| {
+        let num_name = num_name.extract::<&str>();
+        if num_name.is_err() {
+            false
+        } else {
+            num_name.unwrap() == needle
+        }
+    })
+}
+
 #[pyfunction]
 fn eval_arithmetic<'py>(
     py: Python<'py>,
     ror: &Arithmetic,
     numerical_data: PyReadonlyArray2<f64>,
-    numerical_cols: Vec<&'py str>,
-) -> PyResult<&'py PyArray2<f64>> {
+    numerical_cols: &Bound<'py, PyList>,
+) -> PyResult<Bound<'py, PyArray2<f64>>> {
     let numerical_data = numerical_data.as_array();
     let vars = ror
         .expr
         .var_names()
         .iter()
-        .map(|vn| {
-            if let Some(num_idx) = numerical_cols.iter().position(|num_name| vn == num_name) {
+        .map(|vn: &String| {
+            if let Some(num_idx) = find_col(numerical_cols, vn) {
                 let s: ArrayView1<'_, f64> = numerical_data.slice(s![.., num_idx]);
                 let n_rows = s.dim();
                 Ok(Value::Array(
@@ -62,7 +74,7 @@ fn eval_arithmetic<'py>(
                         pya[(row, col)] = a.get(row, col);
                     }
                 }
-                let res = pya.into_pyarray(py);
+                let res = pya.into_pyarray_bound(py);
 
                 Ok(res)
             }
@@ -71,10 +83,10 @@ fn eval_arithmetic<'py>(
                 for row in 0..row_inds.len() {
                     pya[(row, 0)] = row_inds[row] as f64;
                 }
-                let res = pya.into_pyarray(py);
+                let res = pya.into_pyarray_bound(py);
                 Ok(res)
             }
-            Value::Scalar(s) => Ok(Array2::<f64>::from_elem((1, 1), s).into_pyarray(py)),
+            Value::Scalar(s) => Ok(Array2::<f64>::from_elem((1, 1), s).into_pyarray_bound(py)),
             Value::Cats(_) => Err(PyValueError::new_err("result cannot be cat".to_string())),
             Value::Error(e) => Err(PyValueError::new_err(format!("computation failed, {e:?}"))),
         }
@@ -85,11 +97,11 @@ fn eval_wilkinson<'py>(
     py: Python<'py>,
     ror: &Wilkinson,
     numerical_data: PyReadonlyArray2<f64>,
-    numerical_cols: Vec<&'py str>,
+    numerical_cols: &Bound<'py, PyList>,
     cat_data: PyReadonlyArray2<PyObject>,
-    cat_cols: Vec<&'py str>,
+    cat_cols: &Bound<'py, PyList>,
     skip_names: bool,
-) -> PyResult<(Option<Vec<String>>, &'py PyArray2<f64>)> {
+) -> PyResult<(Option<Vec<String>>, Bound<'py, PyArray2<f64>>)> {
     let numerical_data = numerical_data.as_array();
     let cat_data = cat_data.as_array();
     let vars = ror
@@ -97,13 +109,15 @@ fn eval_wilkinson<'py>(
         .var_names()
         .iter()
         .map(|vn| {
-            if let Some(num_idx) = numerical_cols.iter().position(|num_name| vn == num_name) {
+            if let Some(num_idx) = find_col(numerical_cols, vn) {
                 let s: ArrayView1<'_, f64> = numerical_data.slice(s![.., num_idx]);
                 let n_rows = s.dim();
                 let names = if skip_names {
                     None
                 } else {
-                    Some(NameValue::Array(vec![numerical_cols[num_idx].to_string()]))
+                    Some(NameValue::Array(vec![numerical_cols
+                        .get_item(num_idx)?
+                        .extract::<String>()?]))
                 };
                 Ok((
                     names,
@@ -111,7 +125,7 @@ fn eval_wilkinson<'py>(
                         Array2d::from_iter(s.into_iter(), n_rows, 1).map_err(ro_to_pyerr)?,
                     ),
                 ))
-            } else if let Some(cat_idx) = cat_cols.iter().position(|cat_name| vn == cat_name) {
+            } else if let Some(cat_idx) = find_col(cat_cols, vn) {
                 let col: ArrayView1<'_, Py<PyAny>> = cat_data.slice(s![.., cat_idx]);
                 let col = col
                     .iter()
@@ -122,8 +136,11 @@ fn eval_wilkinson<'py>(
                     None
                 } else {
                     Some(
-                        NameValue::cats_from_value(cat_cols[cat_idx].to_string(), x.clone())
-                            .unwrap(),
+                        NameValue::cats_from_value(
+                            cat_cols.get_item(cat_idx)?.extract::<String>()?,
+                            x.clone(),
+                        )
+                        .unwrap(),
                     )
                 };
                 Ok((feature_name, x))
@@ -173,7 +190,7 @@ fn eval_wilkinson<'py>(
                         pya[(row, col + 1)] = a.get(row, col);
                     }
                 }
-                let res = pya.into_pyarray(py);
+                let res = pya.into_pyarray_bound(py);
 
                 Ok((names, res))
             }
@@ -218,7 +235,7 @@ fn parse_wilkinson(s: &str) -> PyResult<Wilkinson> {
 }
 
 #[pymodule]
-fn rormula(_py: Python, m: &PyModule) -> PyResult<()> {
+fn rormula(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(parse_wilkinson, m)?)?;
     m.add_function(wrap_pyfunction!(eval_wilkinson, m)?)?;
     m.add_function(wrap_pyfunction!(parse_arithmetic, m)?)?;
