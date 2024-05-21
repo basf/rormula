@@ -18,6 +18,7 @@ rormula-rs = { path = "../rormula-rs" }
 [features]
 extension-module = ["pyo3/extension-module"]
 default = ["extension-module"]
+print_timings = ["rormula-rs/print_timings"]
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["html_reports"] }

@@ -189,5 +189,7 @@ def test_separated():
 
 
 if __name__ == "__main__":
+    print("- test just numerical")
     test_numerical()
+    print("- test numerical and categorical")
     test_num_cat()

@@ -138,19 +138,38 @@ from the project's root.
 
 ## Rough Time Measurements
 We compare the Rormula to the well-established and way more mature package [Formulaic](https://github.com/matthewwardrop/formulaic).
-The [tests](test/test_wilkinson.py) create a formula in Wilkinson notation and sample 100 random data points. The output on my machine is 
+The [tests](rormula/test/test_wilkinson.py) create a formula in Wilkinson notation and sample 100 random data points. The output on my machine is 
 ```
-Rormula took 0.0040s
-Formulaic took 0.7854s
+- test just numerical
+Rormula took 0.0020s
+Rormula asdf took 0.0247s
+Formulaic took 0.2037s
+- test numerical and categorical
+Rormula took 0.0045s
+Rormula asdf took 0.0300s
+Formulaic took 0.3403s
 ```
-We have separated categorical and numerical data beforehand. If we let rormula do the separation and pass a Pandas dataframe, we obtain
-```
-Rormula took 0.0487s
-Formulaic took 0.7699s
-```
-Rormula returns a list of column names and the data as Numpy array. If we want a Pandas dataframe as result we obtain
-```
-Rormula took 0.0744s
-Formulaic took 0.7639s
-```
+For the first and forth lines that start with `Rormula took`, we have separated categorical and numerical data beforehand. 
+For the result in the second and fifth lines that start with `Rormula asdf took`, we pass and receive pandas dataframes.
 The time is measured for 100 applications of the formula. We used a small data set with 100 rows. For more rows, e.g., 10k+, formulaic becomes competitive and better.
+
+## Profiling
+We use [Counts](https://github.com/nnethercote/counts/) for profiling Rust code.
+
+To run profiling one can use
+```
+maturin develop --release --features print_timings
+python test/test_wilkinson.py 2> counts.txt
+counts -i -e counts.txt
+```
+To profile other specific parts of the Rust-code add
+```rust
+#[cfg(feature = "print_timings")]
+let now = std::time::Instant::now();
+
+// code snippet to be profiled
+
+#[cfg(feature = "print_timings")]
+eprintln!("name of code snippet {}", now.elapsed().as_nanos());
+```
+Note that running in profiling mode makes the whole program slower and the time measurements of the section above will not hold anymore.
