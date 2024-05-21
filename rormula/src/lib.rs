@@ -20,13 +20,13 @@ fn ro_to_pyerr(e: RoErr) -> PyErr {
     PyValueError::new_err(e.msg().to_string())
 }
 
-fn find_col<'py>(cols: &Bound<'py, PyList>, needle: &str) -> Option<usize> {
+fn find_col(cols: &Bound<'_, PyList>, needle: &str) -> Option<usize> {
     cols.iter().position(|num_name| {
         let num_name = num_name.extract::<&str>();
-        if num_name.is_err() {
-            false
+        if let Ok(num_name) = num_name {
+            num_name == needle
         } else {
-            num_name.unwrap() == needle
+            false
         }
     })
 }
@@ -92,6 +92,9 @@ fn eval_arithmetic<'py>(
         }
     }
 }
+
+type WilkonsonReturnType<'py> = (Option<Vec<String>>, Bound<'py, PyArray2<f64>>);
+
 #[pyfunction]
 fn eval_wilkinson<'py>(
     py: Python<'py>,
@@ -101,7 +104,7 @@ fn eval_wilkinson<'py>(
     cat_data: PyReadonlyArray2<PyObject>,
     cat_cols: &Bound<'py, PyList>,
     skip_names: bool,
-) -> PyResult<(Option<Vec<String>>, Bound<'py, PyArray2<f64>>)> {
+) -> PyResult<WilkonsonReturnType<'py>> {
     let numerical_data = numerical_data.as_array();
     let cat_data = cat_data.as_array();
     let vars = ror

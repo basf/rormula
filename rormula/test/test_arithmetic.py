@@ -61,6 +61,7 @@ def test_arithmetic():
     res = rormula.eval_asdf(df)
     assert np.allclose(res.to_numpy().item(), (5.0 - 2.5) / 4.0)
 
+
 def test_scalar_scalar():
     name = "test_scalar"
     data = np.random.random((100, 6)) * 1000
@@ -75,7 +76,7 @@ def test_scalar_scalar():
     s = "5/3"
     rormula = Arithmetic(s, name)
     res = rormula.eval_asdf(df)
-    ref = df.eval(s)    
+    ref = df.eval(s)
     np.allclose(res[name].to_numpy(), ref)
 
 
