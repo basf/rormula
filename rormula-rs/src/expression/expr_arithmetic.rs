@@ -96,27 +96,24 @@ macro_rules! op_compare {
     ($a:expr, $b:expr, $comp_exact:expr, $comp_float:expr) => {
         match ($a, $b) {
             (Value::Scalar(s), Value::Array(a)) => Value::RowInds(
-                a.data
-                    .iter()
+                a.iter()
                     .enumerate()
-                    .filter(|(_, ai)| $comp_float(**ai, s, 1e-8))
+                    .filter(|(_, ai)| $comp_float(*ai, s, 1e-8))
                     .map(|(i, _)| i)
                     .collect(),
             ),
             (Value::Array(a), Value::Scalar(s)) => Value::RowInds(
-                a.data
-                    .iter()
+                a.iter()
                     .enumerate()
-                    .filter(|(_, ai)| $comp_float(**ai, s, 1e-8))
+                    .filter(|(_, ai)| $comp_float(*ai, s, 1e-8))
                     .map(|(i, _)| i)
                     .collect(),
             ),
             (Value::Array(a), Value::Array(b)) => Value::RowInds(
-                a.data
-                    .iter()
-                    .zip(b.data.iter())
+                a.iter()
+                    .zip(b.iter())
                     .enumerate()
-                    .filter(|(_, (ai, bi))| $comp_float(**ai, **bi, 1e-8))
+                    .filter(|(_, (ai, bi))| $comp_float(*ai, *bi, 1e-8))
                     .map(|(i, _)| i)
                     .collect(),
             ),
@@ -154,20 +151,19 @@ pub fn op_restrict(a: Value, b: Value) -> Value {
         (Value::Array(a), Value::RowInds(ris)) => {
             let max = ris.iter().max();
             if let Some(max) = max {
-                if *max >= a.n_rows {
-                    Value::Error(format!("row index out of bounds: {} >= {}", max, a.n_rows))
+                if *max >= a.n_rows() {
+                    Value::Error(format!("row index out of bounds: {} >= {}", max, a.n_rows()))
                 } else {
-                    let data = ris.iter().map(|ri| a.data[*ri]).collect::<Vec<f64>>();
+                    let data = ris.iter().map(|ri| a.get(*ri, 0)).collect::<Vec<f64>>();
                     let n_rows = data.len();
-                    Value::Array(Array2d {
-                        data,
-                        n_rows,
-                        n_cols: 1,
-                        ..a
-                    })
+                    let res = Array2d::new(data, n_rows, 1, a.order());
+                    match res {
+                        Ok(res) => Value::Array(res),
+                        Err(e) => Value::Error(e.to_string()),
+                    }
                 }
             } else {
-                Value::Array(Array2d::ones(0, a.n_cols))
+                Value::Array(Array2d::ones(0, a.n_cols()))
             }
         }
         (Value::Cats(mut c), Value::RowInds(ris)) => {

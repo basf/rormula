@@ -38,6 +38,9 @@ pub type RoResult<U> = Result<U, RoErr>;
 /// ```
 #[macro_export]
 macro_rules! roerr {
+    ($s:literal) => {
+        $crate::result::RoErr::new(format!($s).as_str())
+    };
     ($s:literal, $( $exps:expr),*) => {
         $crate::result::RoErr::new(format!($s, $($exps,)*).as_str())
     }

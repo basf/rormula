@@ -7,17 +7,21 @@ use rormula_rs::{
 
 #[test]
 fn test_wilkinson() {
+    let v1 = Array2d::from_iter([0.1, 0.2, 0.3].iter(), 3, 1).unwrap();
+    let v2 = Array2d::from_iter([0.4, 0.5, 0.6].iter(), 3, 1).unwrap();
     let n1 = NameValue::Array(vec!["n".to_string()]);
-    let v1 = Value::Array(Array2d::from_iter([0.1, 0.2, 0.3].iter(), 3, 1).unwrap());
+    let v1 = Value::Array(v1);
     let n2 = NameValue::Array(vec!["o".to_string()]);
-    let v2 = Value::Array(Array2d::from_iter([0.4, 0.5, 0.6].iter(), 3, 1).unwrap());
+    let v2 = Value::Array(v2);
     let s = "n+o+n";
     let expr = ExprWilkinson::parse(s).unwrap();
-    match expr.eval_vec(vec![v1, v2]).unwrap() {
+    let ref_arr =
+        Array2d::from_iter([0.1, 0.4, 0.1, 0.2, 0.5, 0.2, 0.3, 0.6, 0.3].iter(), 3, 3).unwrap();
+    let res = expr.eval_vec(vec![v1, v2]).unwrap() ;
+    match res {
         Value::Array(a) => {
-            a.data
-                .iter()
-                .zip([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.1, 0.2, 0.3].iter())
+            a.iter()
+                .zip(ref_arr.iter())
                 .for_each(|(x, y)| assert!((x - y).abs() < 1e-12));
         }
         Value::Error(e) => {
@@ -83,7 +87,7 @@ fn test_restrict() {
     let res = exp.eval_vec(vars).unwrap();
     println!("{:?}", res);
     if let Value::Array(a) = res {
-        assert_eq!(a.data, vec![0.0; 5]);
+        assert_eq!(a.iter().collect::<Vec<_>>(), vec![0.0; 5]);
     } else {
         assert!(false);
     }

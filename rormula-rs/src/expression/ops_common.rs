@@ -29,58 +29,20 @@ pub fn cat_to_dummy(c: Value) -> RoResult<Value> {
 }
 
 pub fn op_componentwise_array(
-    mut a: Array2d,
+    a: Array2d,
     b: Array2d,
     op: &impl Fn(f64, f64) -> f64,
 ) -> RoResult<Array2d> {
-    if a.n_rows == b.n_rows {
-        #[cfg(feature = "print_timings")]
-        let now = std::time::Instant::now();
-
-        let n_initial_cols_a = a.n_cols;
-        for b_col in 0..b.n_cols {
-            let mul_col_with_bcol = |row_idx: usize, x: f64| op(x, b.get(row_idx, b_col));
-            if b_col == b.n_cols - 1 {
-                // last col of b -> re-use memory of a
-                for a_col in 0..n_initial_cols_a {
-                    a.column_mutate(a_col, &mul_col_with_bcol);
-                }
-            } else {
-                // not last col of b -> append to a
-                for a_col in 0..n_initial_cols_a {
-                    let mut new_col = a.column_copy(a_col);
-                    new_col.column_mutate(0, &mul_col_with_bcol);
-                    a = a.concatenate_cols(new_col)?;
-                }
-            }
-        }
-        let n_elts = a.data.len();
-        a.data.rotate_right(n_elts - n_initial_cols_a * a.n_rows);
-
-        #[cfg(feature = "print_timings")]
-        eprintln!("colon op {}", now.elapsed().as_nanos());
-
-        Ok(a)
-    } else {
-        Err(roerr!(
-            "number of rows don't match, {}, {}",
-            a.n_rows,
-            b.n_rows
-        ))
-    }
+    a.componentwise(b, op)
 }
 
 pub fn op_scalar(a: Value, b: Value, op: &impl Fn(f64, f64) -> f64) -> Value {
     let arr_vs_sc = |arr: &mut Array2d, sc| {
-        for elt in &mut arr.data {
-            *elt = op(*elt, sc);
-        }
+        arr.elt_mutate(&|elt| op(elt, sc));
         Value::Array(mem::take(arr))
     };
     let sc_vs_arr = |sc, arr: &mut Array2d| {
-        for elt in &mut arr.data {
-            *elt = op(sc, *elt);
-        }
+        arr.elt_mutate(&|elt| op(sc, elt));
         Value::Array(mem::take(arr))
     };
     let sc_vs_sc = |sc1, sc2| Value::Scalar(op(sc1, sc2));

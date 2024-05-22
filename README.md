@@ -162,14 +162,8 @@ maturin develop --release --features print_timings
 python test/test_wilkinson.py 2> counts.txt
 counts -i -e counts.txt
 ```
-To profile other specific parts of the Rust-code add
+To profile other specific parts of the Rust-code use the `timing!`-macro.
 ```rust
-#[cfg(feature = "print_timings")]
-let now = std::time::Instant::now();
-
-// code snippet to be profiled
-
-#[cfg(feature = "print_timings")]
-eprintln!("name of code snippet {}", now.elapsed().as_nanos());
+let res = timing!(some_calculation(), "name of some calculation");
 ```
 Note that running in profiling mode makes the whole program slower and the time measurements of the section above will not hold anymore.

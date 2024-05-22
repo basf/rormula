@@ -5,6 +5,7 @@ use exmex::{ops_factory, BinOp, FlatEx, MakeOperators, Operator};
 use crate::array::Array2d;
 use crate::expression::{ops_common, value::Value};
 use crate::result::RoResult;
+use crate::timing;
 
 use super::value::NameValue;
 
@@ -45,23 +46,16 @@ fn apply_op(a: Value, b: Value, op: &impl Fn(Array2d, Array2d) -> RoResult<Array
 }
 
 pub fn op_concat(a: Value, b: Value) -> Value {
-    apply_op(a, b, &|a, b| {
-        #[cfg(feature = "print_timings")]
-        let now = std::time::Instant::now();
-
-        let res = a.concatenate_cols(b);
-
-        #[cfg(feature = "print_timings")]
-        eprintln!("plus op {}", now.elapsed().as_nanos());
-
-        res
-    })
+    timing!(apply_op(a, b, &|a, b| a.concatenate_cols(b)), "plus op")
 }
 
 pub fn op_multiply(a: Value, b: Value) -> Value {
-    apply_op(a, b, &|a: Array2d, b: Array2d| {
-        ops_common::op_componentwise_array(a, b, &|x, y| x * y)
-    })
+    timing!(
+        apply_op(a, b, &|a: Array2d, b: Array2d| {
+            a.componentwise(b, &|x, y| x * y)
+        }),
+        "multiply op"
+    )
 }
 
 #[derive(Clone, Debug)]
@@ -247,9 +241,11 @@ fn names_equal(names: &[String], expected: &[&str]) {
 }
 #[cfg(test)]
 fn array_almost_equal(a1: Array2d, a2: Array2d) {
-    assert_eq!(a1.n_cols, a2.n_cols);
-    assert_eq!(a1.n_rows, a2.n_rows);
-    for (elt1, elt2) in a1.data.iter().zip(a2.data.iter()) {
+    assert_eq!(a1.n_cols(), a2.n_cols());
+    assert_eq!(a1.n_rows(), a2.n_rows());
+    println!("{a1:?}");
+    println!("{a2:?}");
+    for (elt1, elt2) in a1.iter().zip(a2.iter()) {
         assert!((elt1 - elt2).abs() < 1e-12);
     }
 }
@@ -267,7 +263,7 @@ fn test_cat_to_dummy() {
     }
     if let Value::Array(arr) = ops_common::cat_to_dummy(cats.clone()).unwrap() {
         println!("{arr:?}");
-        assert_eq!(arr.n_cols, 3);
+        assert_eq!(arr.n_cols(), 3);
         assert_eq!(arr.get(0, 0), 0.0);
         assert_eq!(arr.get(1, 0), 1.0);
         assert_eq!(arr.get(2, 1), 1.0);

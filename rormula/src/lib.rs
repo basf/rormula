@@ -9,9 +9,12 @@ use pyo3::{
 };
 pub use rormula_rs::exmex::prelude::*;
 pub use rormula_rs::exmex::ExError;
-use rormula_rs::expression::{ExprColCount, ExprNames, ExprWilkinson, NameValue, Value};
 use rormula_rs::result::RoErr;
 use rormula_rs::{array::Array2d, expression::ExprArithmetic};
+use rormula_rs::{
+    expression::{ExprColCount, ExprNames, ExprWilkinson, NameValue, Value},
+    timing,
+};
 
 fn ex_to_pyerr(e: ExError) -> PyErr {
     PyTypeError::new_err(e.msg().to_string())
@@ -68,9 +71,9 @@ fn eval_arithmetic<'py>(
 
         match result_data {
             Value::Array(a) => {
-                let mut pya = Array2::<f64>::ones([a.n_rows, a.n_cols]);
-                for col in 0..a.n_cols {
-                    for row in 0..a.n_rows {
+                let mut pya = Array2::<f64>::ones([a.n_rows(), a.n_cols()]);
+                for col in 0..a.n_cols() {
+                    for row in 0..a.n_rows() {
                         pya[(row, col)] = a.get(row, col);
                     }
                 }
@@ -107,53 +110,56 @@ fn eval_wilkinson<'py>(
 ) -> PyResult<WilkonsonReturnType<'py>> {
     let numerical_data = numerical_data.as_array();
     let cat_data = cat_data.as_array();
-    let vars = ror
-        .expr
-        .var_names()
-        .iter()
-        .map(|vn| {
-            if let Some(num_idx) = find_col(numerical_cols, vn) {
-                let s: ArrayView1<'_, f64> = numerical_data.slice(s![.., num_idx]);
-                let n_rows = s.dim();
-                let names = if skip_names {
-                    None
-                } else {
-                    Some(NameValue::Array(vec![numerical_cols
-                        .get_item(num_idx)?
-                        .extract::<String>()?]))
-                };
-                Ok((
-                    names,
-                    Value::Array(
-                        Array2d::from_iter(s.into_iter(), n_rows, 1).map_err(ro_to_pyerr)?,
-                    ),
-                ))
-            } else if let Some(cat_idx) = find_col(cat_cols, vn) {
-                let col: ArrayView1<'_, Py<PyAny>> = cat_data.slice(s![.., cat_idx]);
-                let col = col
-                    .iter()
-                    .map(|s: &pyo3::Py<pyo3::PyAny>| Ok(s.extract::<&str>(py)?.to_string()))
-                    .collect::<PyResult<Vec<_>>>()?;
-                let x = Value::Cats(col);
-                let feature_name = if skip_names {
-                    None
-                } else {
-                    Some(
-                        NameValue::cats_from_value(
-                            cat_cols.get_item(cat_idx)?.extract::<String>()?,
-                            x.clone(),
+
+    let vars = timing!(
+        ror.expr
+            .var_names()
+            .iter()
+            .map(|vn| {
+                if let Some(num_idx) = find_col(numerical_cols, vn) {
+                    let s: ArrayView1<'_, f64> = numerical_data.slice(s![.., num_idx]);
+                    let n_rows = s.dim();
+                    let names = if skip_names {
+                        None
+                    } else {
+                        Some(NameValue::Array(vec![numerical_cols
+                            .get_item(num_idx)?
+                            .extract::<String>()?]))
+                    };
+                    Ok((
+                        names,
+                        Value::Array(
+                            Array2d::from_iter(s.into_iter(), n_rows, 1).map_err(ro_to_pyerr)?,
+                        ),
+                    ))
+                } else if let Some(cat_idx) = find_col(cat_cols, vn) {
+                    let col: ArrayView1<'_, Py<PyAny>> = cat_data.slice(s![.., cat_idx]);
+                    let col = col
+                        .iter()
+                        .map(|s: &pyo3::Py<pyo3::PyAny>| Ok(s.extract::<&str>(py)?.to_string()))
+                        .collect::<PyResult<Vec<_>>>()?;
+                    let x = Value::Cats(col);
+                    let feature_name = if skip_names {
+                        None
+                    } else {
+                        Some(
+                            NameValue::cats_from_value(
+                                cat_cols.get_item(cat_idx)?.extract::<String>()?,
+                                x.clone(),
+                            )
+                            .unwrap(),
                         )
-                        .unwrap(),
-                    )
-                };
-                Ok((feature_name, x))
-            } else {
-                Err(PyValueError::new_err(format!(
-                    "did not find Variable {vn} in the data"
-                )))
-            }
-        })
-        .collect::<PyResult<Vec<_>>>()?;
+                    };
+                    Ok((feature_name, x))
+                } else {
+                    Err(PyValueError::new_err(format!(
+                        "did not find Variable {vn} in the data"
+                    )))
+                }
+            })
+            .collect::<PyResult<Vec<_>>>()?,
+        "vars"
+    );
     let (vars_name, mut vars): (Vec<Option<NameValue>>, Vec<Value>) = vars.into_iter().unzip();
     let vars_name: Vec<NameValue> = vars_name.into_iter().flatten().collect();
 
@@ -164,11 +170,12 @@ fn eval_wilkinson<'py>(
     } else {
         let count_vars = vec![1; vars.len()];
         let n_cols = ror.expr_count.eval(&count_vars).map_err(ex_to_pyerr)?;
+
         let var_indices_ordered = ror.expr.var_indices_ordered();
         // increase capacity of first array
         for var_idx in var_indices_ordered {
             if let Value::Array(arr) = &mut vars[var_idx] {
-                arr.capacity = Some(n_cols * arr.n_rows - arr.data.len());
+                arr.set_capacity(n_cols * arr.n_rows() - arr.len());
                 break;
             }
         }
@@ -179,33 +186,37 @@ fn eval_wilkinson<'py>(
             None
         };
 
-        match result_data {
-            Value::Array(a) => {
-                let names = if let Some(NameValue::Array(mut names)) = result_names {
-                    names.insert(0, "Intercept".to_string());
-                    Some(names)
-                } else {
-                    None
-                };
-                let mut pya = Array2::<f64>::ones([a.n_rows, a.n_cols + 1]);
-                for col in 0..a.n_cols {
-                    for row in 0..a.n_rows {
-                        pya[(row, col + 1)] = a.get(row, col);
-                    }
-                }
-                let res = pya.into_pyarray_bound(py);
+        timing!(
+            match result_data {
+                Value::Array(a) => {
+                    let names = if let Some(NameValue::Array(mut names)) = result_names {
+                        names.insert(0, "Intercept".to_string());
+                        Some(names)
+                    } else {
+                        None
+                    };
+                    let mut pya = Array2::<f64>::ones([a.n_rows(), a.n_cols() + 1]);
 
-                Ok((names, res))
-            }
-            Value::Cats(_) => Err(PyValueError::new_err("result cannot be cat".to_string())),
-            Value::RowInds(_) => Err(PyValueError::new_err(
-                "result cannot be row indices".to_string(),
-            )),
-            Value::Scalar(s) => Err(PyValueError::new_err(format!(
-                "result cannot be skalar but got {s}"
-            ))),
-            Value::Error(e) => Err(PyValueError::new_err(format!("computation failed, {e:?}"))),
-        }
+                    for row in 0..a.n_rows() {
+                        for col in 0..a.n_cols() {
+                            pya[(row, col + 1)] = a.get(row, col);
+                        }
+                    }
+                    let res = pya.into_pyarray_bound(py);
+
+                    Ok((names, res))
+                }
+                Value::Cats(_) => Err(PyValueError::new_err("result cannot be cat".to_string())),
+                Value::RowInds(_) => Err(PyValueError::new_err(
+                    "result cannot be row indices".to_string(),
+                )),
+                Value::Scalar(s) => Err(PyValueError::new_err(format!(
+                    "result cannot be skalar but got {s}"
+                ))),
+                Value::Error(e) => Err(PyValueError::new_err(format!("computation failed, {e:?}"))),
+            },
+            "convert res"
+        )
     }
 }
 
@@ -230,11 +241,14 @@ struct Wilkinson {
 }
 #[pyfunction]
 fn parse_wilkinson(s: &str) -> PyResult<Wilkinson> {
-    Ok(Wilkinson {
-        expr: ExprWilkinson::parse(s).map_err(ex_to_pyerr)?,
-        expr_names: ExprNames::parse(s).map_err(ex_to_pyerr)?,
-        expr_count: ExprColCount::parse(s).map_err(ex_to_pyerr)?,
-    })
+    Ok(timing!(
+        Wilkinson {
+            expr: ExprWilkinson::parse(s).map_err(ex_to_pyerr)?,
+            expr_names: ExprNames::parse(s).map_err(ex_to_pyerr)?,
+            expr_count: ExprColCount::parse(s).map_err(ex_to_pyerr)?,
+        },
+        "parse"
+    ))
 }
 
 #[pymodule]
