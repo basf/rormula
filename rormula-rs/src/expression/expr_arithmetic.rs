@@ -156,7 +156,7 @@ pub fn op_restrict(a: Value, b: Value) -> Value {
                 } else {
                     let data = ris.iter().map(|ri| a.get(*ri, 0)).collect::<Vec<f64>>();
                     let n_rows = data.len();
-                    let res = Array2d::new(data, n_rows, 1, a.order());
+                    let res = Array2d::new(data, n_rows, 1);
                     match res {
                         Ok(res) => Value::Array(res),
                         Err(e) => Value::Error(e.to_string()),

@@ -2,24 +2,141 @@ use std::fmt::Debug;
 
 use crate::{result::RoResult, roerr, timing};
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-pub enum MemOrder {
-    #[default]
-    ColMajor,
-    RowMajor,
+pub trait MemOrder {
+    fn get(data: &[f64], row_idx: usize, col_idx: usize, n_rows: usize, n_cols: usize) -> f64;
+    fn set(
+        data: &mut [f64],
+        row_idx: usize,
+        col_idx: usize,
+        value: f64,
+        n_rows: usize,
+        n_cols: usize,
+    );
+    fn column_copy(data: &[f64], col_idx: usize, n_rows: usize, n_cols: usize) -> Vec<f64>;
+    fn concat_cols(
+        self_data: Vec<f64>,
+        self_n_rows: usize,
+        self_n_cols: usize,
+        other_data: Vec<f64>,
+        other_n_rows: usize,
+        other_n_cols: usize,
+    ) -> RoResult<(Vec<f64>, usize, usize)>;
+    fn pproc_compontentwise(data: Vec<f64>, n_initial_cols: usize, n_rows: usize) -> Vec<f64>;
+}
+
+#[derive(Default)]
+pub struct ColMajor;
+impl MemOrder for ColMajor {
+    fn get(data: &[f64], row_idx: usize, col_idx: usize, n_rows: usize, _: usize) -> f64 {
+        data[row_idx + n_rows * col_idx]
+    }
+    fn set(data: &mut [f64], row_idx: usize, col_idx: usize, value: f64, n_rows: usize, _: usize) {
+        data[row_idx + n_rows * col_idx] = value;
+    }
+    fn column_copy(data: &[f64], col_idx: usize, n_rows: usize, _: usize) -> Vec<f64> {
+        data[(col_idx * n_rows)..((col_idx + 1) * n_rows)].to_vec()
+    }
+    fn concat_cols(
+        self_data: Vec<f64>,
+        self_n_rows: usize,
+        self_n_cols: usize,
+        other_data: Vec<f64>,
+        other_n_rows: usize,
+        other_n_cols: usize,
+    ) -> RoResult<(Vec<f64>, usize, usize)> {
+        if self_n_rows == other_n_rows {
+            let n_cols = self_n_cols + other_n_cols;
+            let mut data = self_data;
+            data.extend(other_data);
+            Ok((data, self_n_rows, n_cols))
+        } else {
+            Err(roerr!(
+                "not matching number of rows, {} vs {}",
+                self_n_rows,
+                other_n_rows
+            ))
+        }
+    }
+    fn pproc_compontentwise(mut data: Vec<f64>, n_initial_cols: usize, n_rows: usize) -> Vec<f64> {
+        let n_elts = data.len();
+        data.rotate_right(n_elts - n_initial_cols * n_rows);
+        data
+    }
+}
+#[derive(Default)]
+pub struct RowMajor;
+impl MemOrder for RowMajor {
+    fn get(data: &[f64], row_idx: usize, col_idx: usize, _: usize, n_cols: usize) -> f64 {
+        data[row_idx * n_cols + col_idx]
+    }
+    fn set(data: &mut [f64], row_idx: usize, col_idx: usize, value: f64, _: usize, n_cols: usize) {
+        data[row_idx * n_cols + col_idx] = value;
+    }
+    fn column_copy(data: &[f64], col_idx: usize, n_rows: usize, n_cols: usize) -> Vec<f64> {
+        let mut result = Vec::with_capacity(n_rows);
+        for row in 0..n_rows {
+            result.push(Self::get(&data, row, col_idx, n_rows, n_cols));
+        }
+        result
+    }
+    fn concat_cols(
+        self_data: Vec<f64>,
+        self_n_rows: usize,
+        self_n_cols: usize,
+        other_data: Vec<f64>,
+        other_n_rows: usize,
+        other_n_cols: usize,
+    ) -> RoResult<(Vec<f64>, usize, usize)> {
+        if self_n_rows == other_n_rows {
+            let n_cols = self_n_cols + other_n_cols;
+            let mut data = self_data;
+            data.resize(n_cols * self_n_rows, 0.0);
+            for row in (1..self_n_rows).rev() {
+                let src = row * self_n_cols;
+                let dest = row * n_cols;
+                data.copy_within(src..(src + self_n_cols), dest);
+            }
+            let n_old_cols = self_n_cols;
+            for row in 0..self_n_rows {
+                for col in 0..other_n_cols {
+                    Self::set(
+                        &mut data,
+                        row,
+                        n_old_cols + col,
+                        Self::get(&other_data, row, col, other_n_rows, other_n_cols),
+                        self_n_rows,
+                        n_cols,
+                    )
+                }
+            }
+            Ok((data, self_n_rows, n_cols))
+        } else {
+            Err(roerr!(
+                "not matching number of rows, {} vs {}",
+                self_n_rows,
+                other_n_rows
+            ))
+        }
+    }
+    fn pproc_compontentwise(data: Vec<f64>, _: usize, _: usize) -> Vec<f64> {
+        data
+    }
 }
 
 /// Col major ordering which is non-standard!
 /// column major means the next element is the next row in memory, i.e., you iterate along the column
 #[derive(Default)]
-pub struct Array2d {
+pub struct Array2d<M = RowMajor> {
     data: Vec<f64>,
     n_rows: usize,
     n_cols: usize,
     capacity: Option<usize>,
-    order: MemOrder,
+    phantom: std::marker::PhantomData<M>,
 }
-impl Array2d {
+impl<M> Array2d<M>
+where
+    M: MemOrder,
+{
     pub fn n_rows(&self) -> usize {
         self.n_rows
     }
@@ -29,13 +146,10 @@ impl Array2d {
     pub fn capacity(&self) -> Option<usize> {
         self.capacity
     }
-    pub fn order(&self) -> MemOrder {
-        self.order
-    }
     pub fn set_capacity(&mut self, capa: usize) {
         self.capacity = Some(capa);
     }
-    pub fn new(data: Vec<f64>, n_rows: usize, n_cols: usize, order: MemOrder) -> RoResult<Self> {
+    pub fn new(data: Vec<f64>, n_rows: usize, n_cols: usize) -> RoResult<Self> {
         if data.len() != n_rows * n_cols {
             Err(roerr!("dimension of input data does not fit"))
         } else {
@@ -44,7 +158,7 @@ impl Array2d {
                 n_rows,
                 n_cols,
                 capacity: None,
-                order,
+                phantom: std::marker::PhantomData,
             })
         }
     }
@@ -73,31 +187,13 @@ impl Array2d {
         }
     }
     pub fn column_copy(&self, col_idx: usize) -> Self {
-        match self.order {
-            MemOrder::ColMajor => {
-                let data =
-                    self.data[(col_idx * self.n_rows)..((col_idx + 1) * self.n_rows)].to_vec();
-                Self {
-                    data,
-                    n_rows: self.n_rows,
-                    n_cols: 1,
-                    capacity: None,
-                    order: MemOrder::ColMajor,
-                }
-            }
-            MemOrder::RowMajor => {
-                let mut data = Vec::with_capacity(self.n_rows);
-                for row in 0..self.n_rows {
-                    data.push(self.get(row, col_idx));
-                }
-                Self {
-                    data,
-                    n_rows: self.n_rows,
-                    n_cols: 1,
-                    capacity: None,
-                    order: MemOrder::RowMajor,
-                }
-            }
+        let data = M::column_copy(&self.data, col_idx, self.n_rows, self.n_cols);
+        Self {
+            data,
+            n_rows: self.n_rows,
+            n_cols: 1,
+            capacity: None,
+            phantom: std::marker::PhantomData,
         }
     }
     pub fn ones(n_rows: usize, n_cols: usize) -> Self {
@@ -107,7 +203,7 @@ impl Array2d {
             n_rows,
             n_cols,
             capacity: None,
-            order: MemOrder::default(),
+            phantom: std::marker::PhantomData,
         }
     }
     pub fn zeros(n_rows: usize, n_cols: usize) -> Self {
@@ -117,75 +213,45 @@ impl Array2d {
             n_rows,
             n_cols,
             capacity: None,
-            order: MemOrder::default(),
+            phantom: std::marker::PhantomData,
         }
     }
     #[inline]
     pub fn set(&mut self, row_idx: usize, col_idx: usize, value: f64) {
-        match self.order {
-            MemOrder::RowMajor => self.data[row_idx * self.n_cols + col_idx] = value,
-            MemOrder::ColMajor => self.data[row_idx + self.n_rows * col_idx] = value,
-        }
+        M::set(
+            &mut self.data,
+            row_idx,
+            col_idx,
+            value,
+            self.n_rows,
+            self.n_cols,
+        );
     }
     #[inline]
     pub fn get(&self, row_idx: usize, col_idx: usize) -> f64 {
-        match self.order {
-            MemOrder::RowMajor => self.data[row_idx * self.n_cols + col_idx],
-            MemOrder::ColMajor => self.data[row_idx + self.n_rows * col_idx],
-        }
+        M::get(&self.data, row_idx, col_idx, self.n_rows, self.n_cols)
     }
-    pub fn concatenate_cols(mut self, mut other: Self) -> RoResult<Self> {
-        timing!(
+    pub fn concatenate_cols(self, other: Self) -> RoResult<Self> {
+        let (data, n_rows, n_cols) = timing!(
             {
-                if other.order != self.order {
-                    return Err(roerr!("order of arrays does not match",));
-                }
-                if self.n_rows == other.n_rows {
-                    let n_cols = self.n_cols + other.n_cols;
-                    match self.order {
-                        MemOrder::ColMajor => {
-                            self.data.append(&mut other.data);
-                            Ok(Self {
-                                data: self.data,
-                                n_rows: self.n_rows,
-                                n_cols,
-                                capacity: self.capacity,
-                                order: MemOrder::ColMajor,
-                            })
-                        }
-                        MemOrder::RowMajor => {
-                            timing!(self.data.resize(n_cols * self.n_rows, 0.0), "resize");
-                            timing!(
-                                for row in (1..self.n_rows).rev() {
-                                    let src = row * self.n_cols;
-                                    let dest = row * n_cols;
-                                    self.data.copy_within(src..(src + self.n_cols), dest);
-                                },
-                                "within"
-                            );
-                            let n_old_cols = self.n_cols;
-                            self.n_cols = n_cols;
-                            timing!(
-                                for row in 0..self.n_rows {
-                                    for col in 0..other.n_cols {
-                                        self.set(row, n_old_cols + col, other.get(row, col));
-                                    }
-                                },
-                                "other"
-                            );
-                            Ok(self)
-                        }
-                    }
-                } else {
-                    Err(roerr!(
-                        "not matching number of rows, {} vs {}",
-                        self.n_rows,
-                        other.n_rows
-                    ))
-                }
+                M::concat_cols(
+                    self.data,
+                    self.n_rows,
+                    self.n_cols,
+                    other.data,
+                    other.n_rows,
+                    other.n_cols,
+                )
             },
             "conc"
-        )
+        )?;
+        Ok(Self {
+            data,
+            n_rows,
+            n_cols,
+            capacity: self.capacity,
+            phantom: std::marker::PhantomData,
+        })
     }
     pub fn column_mutate(&mut self, col_idx: usize, mutate: &impl Fn(usize, f64) -> f64) {
         timing!(
@@ -225,15 +291,13 @@ impl Array2d {
                     }
                 }
             }
-            match self.order {
-                MemOrder::ColMajor => {
-                    let n_elts = self.data.len();
-                    self.data
-                        .rotate_right(n_elts - n_initial_cols_a * self.n_rows);
-                    Ok(self)
-                }
-                MemOrder::RowMajor => Ok(self),
-            }
+            Ok(Self {
+                data: M::pproc_compontentwise(self.data, n_initial_cols_a, self.n_rows),
+                n_rows: self.n_rows,
+                n_cols: self.n_cols,
+                capacity: self.capacity,
+                phantom: std::marker::PhantomData,
+            })
         } else {
             Err(roerr!(
                 "number of rows don't match, {}, {}",
@@ -246,7 +310,10 @@ impl Array2d {
         self.data.len()
     }
 }
-impl Debug for Array2d {
+impl<M> Debug for Array2d<M>
+where
+    M: MemOrder,
+{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut s = "".to_string();
         for row in 0..self.n_rows {
@@ -259,7 +326,7 @@ impl Debug for Array2d {
         f.write_str(s.as_str())
     }
 }
-impl Clone for Array2d {
+impl<M> Clone for Array2d<M> {
     fn clone(&self) -> Self {
         let data = if let Some(capa) = self.capacity {
             let mut data = self.data.clone();
@@ -273,11 +340,11 @@ impl Clone for Array2d {
             n_cols: self.n_cols,
             n_rows: self.n_rows,
             capacity: self.capacity,
-            order: self.order,
+            phantom: std::marker::PhantomData,
         }
     }
 }
-impl PartialEq for Array2d {
+impl<M> PartialEq for Array2d<M> {
     fn eq(&self, other: &Self) -> bool {
         if self.n_cols != other.n_cols || self.n_rows != other.n_rows {
             false
@@ -294,7 +361,7 @@ impl PartialEq for Array2d {
 
 #[test]
 fn test_capa() {
-    fn test(a: Array2d) {
+    fn test(a: Array2d<RowMajor>) {
         println!("{}", a.data.capacity());
     }
     let mut a = Array2d::from_iter([0.0, 2.0, 3.0, 4.0].iter(), 1, 4).unwrap();
@@ -302,45 +369,49 @@ fn test_capa() {
     test(a);
 }
 
-#[rustfmt::skip]
 #[test]
-fn test_default_colmutate() {
-    let mut a = Array2d::from_iter(
-        vec![
-            1.0, 0.0, 
-            1.0, 2.0, 
-            1.0, 3.0, 
-            1.0, 4.0].iter(),
-         4,
-         2
-    ).unwrap();
-    assert_eq!(a.get(0, 1), 0.0);
-    assert_eq!(a.get(1, 1), 2.0);
-    assert_eq!(a.get(2, 1), 3.0);
-    assert_eq!(a.get(3, 1), 4.0);
-    a.column_mutate(1, &|row_idx, val| row_idx as f64 + val + 1.0);
-    assert_eq!(a.get(0, 1), 1.0);
-    assert_eq!(a.get(1, 1), 4.0);
-    assert_eq!(a.get(2, 1), 6.0);
-    assert_eq!(a.get(3, 1), 8.0);
+fn test_colmutate() {
+    fn test<M>()
+    where
+        M: MemOrder,
+    {
+        let mut a =
+            Array2d::<M>::from_iter(vec![1.0, 0.0, 1.0, 2.0, 1.0, 3.0, 1.0, 4.0].iter(), 4, 2)
+                .unwrap();
+        println!("{:?}", a);
+        println!("{:?}", a.data);
+        assert_eq!(a.get(0, 1), 0.0);
+        assert_eq!(a.get(1, 1), 2.0);
+        assert_eq!(a.get(2, 1), 3.0);
+        assert_eq!(a.get(3, 1), 4.0);
+        a.column_mutate(1, &|row_idx, val| row_idx as f64 + val + 1.0);
+        assert_eq!(a.get(0, 1), 1.0);
+        assert_eq!(a.get(1, 1), 4.0);
+        assert_eq!(a.get(2, 1), 6.0);
+        assert_eq!(a.get(3, 1), 8.0);
 
-    let a = a.clone().concatenate_cols(a.clone()).unwrap();
-    assert_eq!(a.get(0, 1), 1.0);
-    assert_eq!(a.get(1, 1), 4.0);
-    assert_eq!(a.get(2, 1), 6.0);
-    assert_eq!(a.get(3, 1), 8.0);
-    assert_eq!(a.get(0, 3), 1.0);
-    assert_eq!(a.get(1, 3), 4.0);
-    assert_eq!(a.get(2, 3), 6.0);
-    assert_eq!(a.get(3, 3), 8.0);
+        println!("{:?}", a);
+        let a = a.clone().concatenate_cols(a.clone()).unwrap();
+        println!("{:?}", a);
+        assert_eq!(a.get(0, 1), 1.0);
+        assert_eq!(a.get(1, 1), 4.0);
+        assert_eq!(a.get(2, 1), 6.0);
+        assert_eq!(a.get(3, 1), 8.0);
+        assert_eq!(a.get(0, 3), 1.0);
+        assert_eq!(a.get(1, 3), 4.0);
+        assert_eq!(a.get(2, 3), 6.0);
+        assert_eq!(a.get(3, 3), 8.0);
 
-    let b = a.column_copy(1);
-    println!("a \n{:?}", a);
-    println!("b \n{:?}", b);
-    let a = a.componentwise(b, &|x, y| x + y).unwrap();
-    println!("a \n{:?}", a);
-    assert_eq!(a.get(0, 1), 2.0);
-    assert_eq!(a.get(1, 1), 8.0);
-    assert_eq!(a.get(2, 1), 12.0);
-    assert_eq!(a.get(3, 1), 16.0);
+        let b = a.column_copy(1);
+        println!("a \n{:?}", a);
+        println!("b \n{:?}", b);
+        let a = a.componentwise(b, &|x, y| x + y).unwrap();
+        println!("a \n{:?}", a);
+        assert_eq!(a.get(0, 1), 2.0);
+        assert_eq!(a.get(1, 1), 8.0);
+        assert_eq!(a.get(2, 1), 12.0);
+        assert_eq!(a.get(3, 1), 16.0);
+    }
+    test::<RowMajor>();
+    test::<ColMajor>();
 }

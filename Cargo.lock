@@ -687,7 +687,6 @@ dependencies = [
  "criterion",
  "numpy",
  "pyo3",
- "rayon",
  "rormula-rs",
  "which",
 ]
