@@ -75,7 +75,7 @@ impl MemOrder for RowMajor {
     fn column_copy(data: &[f64], col_idx: usize, n_rows: usize, n_cols: usize) -> Vec<f64> {
         let mut result = Vec::with_capacity(n_rows);
         for row in 0..n_rows {
-            result.push(Self::get(&data, row, col_idx, n_rows, n_cols));
+            result.push(Self::get(data, row, col_idx, n_rows, n_cols));
         }
         result
     }
@@ -305,6 +305,9 @@ where
                 b.n_rows
             ))
         }
+    }
+    pub fn is_empty(&self) -> bool {
+        self.data.len() == 0
     }
     pub fn len(&self) -> usize {
         self.data.len()
