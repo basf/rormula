@@ -17,7 +17,7 @@ fn test_wilkinson() {
     let expr = ExprWilkinson::parse(s).unwrap();
     let ref_arr: Array2d =
         Array2d::from_iter([0.1, 0.4, 0.1, 0.2, 0.5, 0.2, 0.3, 0.6, 0.3].iter(), 3, 3).unwrap();
-    let res = expr.eval_vec(vec![v1, v2]).unwrap() ;
+    let res = expr.eval_vec(vec![v1, v2]).unwrap();
     match res {
         Value::Array(a) => {
             a.iter()

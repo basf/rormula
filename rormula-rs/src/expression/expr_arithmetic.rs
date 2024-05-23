@@ -152,7 +152,11 @@ pub fn op_restrict(a: Value, b: Value) -> Value {
             let max = ris.iter().max();
             if let Some(max) = max {
                 if *max >= a.n_rows() {
-                    Value::Error(format!("row index out of bounds: {} >= {}", max, a.n_rows()))
+                    Value::Error(format!(
+                        "row index out of bounds: {} >= {}",
+                        max,
+                        a.n_rows()
+                    ))
                 } else {
                     let data = ris.iter().map(|ri| a.get(*ri, 0)).collect::<Vec<f64>>();
                     let n_rows = data.len();
