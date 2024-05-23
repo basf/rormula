@@ -196,9 +196,9 @@ def test_separated():
 
 
 if __name__ == "__main__":
-    print("- test just numerical")
+    print("- test just numerical 100 rows")
     test_numerical()
-    print("- test numerical and categorical")
+    print("- test numerical and categorical 100 rows")
     test_num_cat()
     print("- test just numerical 100000 rows")
     test_numerical_100000()

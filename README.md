@@ -140,14 +140,18 @@ from the project's root.
 We compare the Rormula to the well-established and way more mature package [Formulaic](https://github.com/matthewwardrop/formulaic).
 The [tests](rormula/test/test_wilkinson.py) create a formula in Wilkinson notation and sample 100 random data points. The output on my machine is 
 ```
-- test just numerical
-Rormula took 0.0020s
-Rormula asdf took 0.0247s
-Formulaic took 0.2037s
-- test numerical and categorical
-Rormula took 0.0045s
-Rormula asdf took 0.0300s
-Formulaic took 0.3403s
+- test just numerical 100 rows
+Rormula took 0.0009s
+Rormula asdf took 0.0213s
+Formulaic took 0.1193s
+- test numerical and categorical 100 rows
+Rormula took 0.0032s
+Rormula asdf took 0.0149s
+Formulaic took 0.1705s
+- test just numerical 100000 rows
+Rormula took 0.2240s
+Rormula asdf took 0.2895s
+Formulaic took 0.2300s
 ```
 For the first and forth lines that start with `Rormula took`, we have separated categorical and numerical data beforehand. 
 For the result in the second and fifth lines that start with `Rormula asdf took`, we pass and receive pandas dataframes.
@@ -162,6 +166,7 @@ maturin develop --release --features print_timings
 python test/test_wilkinson.py 2> counts.txt
 counts -i -e counts.txt
 ```
+see [`rormula/profile.sh`](rormula/profile.sh).
 To profile other specific parts of the Rust-code use the `timing!`-macro.
 ```rust
 let res = timing!(some_calculation(), "name of some calculation");
