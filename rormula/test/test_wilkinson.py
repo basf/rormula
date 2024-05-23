@@ -26,9 +26,9 @@ def test_num_cat():
     timing_and_test(data, formula_str)
 
 
-def test_numerical_1000():
+def test_numerical_100000():
     data_numerical = pd.DataFrame(
-        data=get_numerical_data(1000000), columns=COLS_NUMERICAL
+        data=get_numerical_data(100000), columns=COLS_NUMERICAL
     )
     timing_and_test(data_numerical, FORMULA_STR_NUMERICAL)
 
@@ -200,5 +200,5 @@ if __name__ == "__main__":
     test_numerical()
     print("- test numerical and categorical")
     test_num_cat()
-    print("- test just numerical 1000")
-    test_numerical_1000()
+    print("- test just numerical 100000 rows")
+    test_numerical_100000()
