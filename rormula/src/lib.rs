@@ -1,5 +1,5 @@
 use numpy::{
-    ndarray::{s, Array2, ArrayView1},
+    ndarray::{concatenate, s, Array2, ArrayView1, Axis, Dim},
     IntoPyArray, PyArray2, PyReadonlyArray2,
 };
 use pyo3::{
@@ -126,18 +126,23 @@ fn eval_wilkinson<'py>(
                             .get_item(num_idx)?
                             .extract::<String>()?]))
                     };
-                    Ok((
-                        names,
-                        Value::Array(
-                            Array2d::from_iter(s.into_iter(), n_rows, 1).map_err(ro_to_pyerr)?,
-                        ),
-                    ))
+                    timing!(
+                        Ok((
+                            names,
+                            Value::Array(
+                                Array2d::from_vec(s.to_vec(), n_rows, 1).map_err(ro_to_pyerr)?,
+                            ),
+                        )),
+                        "arr from pyarray"
+                    )
                 } else if let Some(cat_idx) = find_col(cat_cols, vn) {
                     let col: ArrayView1<'_, Py<PyAny>> = cat_data.slice(s![.., cat_idx]);
-                    let col = col
-                        .iter()
-                        .map(|s: &pyo3::Py<pyo3::PyAny>| Ok(s.extract::<&str>(py)?.to_string()))
-                        .collect::<PyResult<Vec<_>>>()?;
+                    let col = timing!(
+                        col.iter()
+                            .map(|s: &pyo3::Py<pyo3::PyAny>| Ok(s.extract::<&str>(py)?.to_string()))
+                            .collect::<PyResult<Vec<_>>>()?,
+                        "categorical conversion"
+                    );
                     let x = Value::Cats(col);
                     let feature_name = if skip_names {
                         None
@@ -195,14 +200,11 @@ fn eval_wilkinson<'py>(
                     } else {
                         None
                     };
-                    let mut pya = Array2::<f64>::ones([a.n_rows(), a.n_cols() + 1]);
+                    let intercept = timing!(Array2::ones(Dim([a.n_rows(), 1])), "intercept alloc");
 
-                    for row in 0..a.n_rows() {
-                        for col in 0..a.n_cols() {
-                            pya[(row, col + 1)] = a.get(row, col);
-                        }
-                    }
-                    let res = pya.into_pyarray_bound(py);
+                    let pya = timing!(a.to_ndarray().map_err(ro_to_pyerr)?, "to ndarray");
+                    let pya = timing!(concatenate![Axis(1), intercept, pya], "intercept");
+                    let res = timing!(pya.into_pyarray_bound(py), "into bound");
 
                     Ok((names, res))
                 }

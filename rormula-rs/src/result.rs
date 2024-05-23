@@ -27,6 +27,10 @@ impl Error for RoErr {}
 /// Rormula's result type with [`RoError`](RoError) as error type.
 pub type RoResult<U> = Result<U, RoErr>;
 
+pub fn to_ro(err: impl Error) -> RoErr {
+    RoErr::new(err.to_string().as_str())
+}
+
 /// Creates an [`RoError`](RoError) with a formatted message.
 /// ```rust
 /// # use std::error::Error;
