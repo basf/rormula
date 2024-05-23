@@ -27,7 +27,9 @@ def test_num_cat():
 
 
 def test_numerical_1000():
-    data_numerical = pd.DataFrame(data=get_numerical_data(1000000), columns=COLS_NUMERICAL)
+    data_numerical = pd.DataFrame(
+        data=get_numerical_data(1000000), columns=COLS_NUMERICAL
+    )
     timing_and_test(data_numerical, FORMULA_STR_NUMERICAL)
 
 
