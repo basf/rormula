@@ -679,7 +679,7 @@ checksum = "c08c74e62047bb2de4ff487b251e4a92e24f48745648451635cec7d591162d9f"
 
 [[package]]
 name = "rormula"
-version = "0.1.7"
+version = "0.1.8"
 dependencies = [
  "criterion",
  "numpy",
@@ -690,7 +690,7 @@ dependencies = [
 
 [[package]]
 name = "rormula-rs"
-version = "0.1.7"
+version = "0.1.8"
 dependencies = [
  "exmex",
  "numpy",
