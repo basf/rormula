@@ -109,3 +109,15 @@ fn test_restrict() {
         assert!(false);
     }
 }
+
+#[test]
+fn test_binop() {
+    let s = "4/3 * a / b * (1.3 / 112.12 / ((21.0+x+y+z) / 2000))";
+    let exp = ExprArithmetic::<ColMajor>::parse(s).unwrap();
+    let a = exp.operator_reprs();
+    assert_eq!(a.len(), 3);
+    assert_eq!(a.as_ref(), &["*", "+", "/"]);
+    let b = exp.binary_reprs();
+    assert_eq!(b.len(), 3);
+    assert_eq!(b.as_ref(), &["*", "+", "/"]);
+}

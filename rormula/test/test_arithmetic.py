@@ -61,6 +61,7 @@ def test_arithmetic():
     res = rormula.eval_asdf(df)
     assert np.allclose(res.to_numpy().item(), (5.0 - 2.5) / 4.0)
     assert rormula.has_row_change_op()
+    assert rormula.unparse() == s
 
     def test_unary(repr: str, np_func):
         s = f"{repr}( ((first_var|{{second.var}}==5.0) - (first_var|{{second.var}}==2.5)) / 4.0)"

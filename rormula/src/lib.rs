@@ -242,6 +242,9 @@ impl Arithmetic {
     pub fn has_row_change_op(&self) -> PyResult<bool> {
         Ok(has_row_change_op(&self.expr))
     }
+    pub fn unparse(&self) -> PyResult<String> {
+        Ok(self.expr.unparse().to_string())
+    }
 }
 
 #[derive(Debug)]

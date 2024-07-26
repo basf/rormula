@@ -91,5 +91,8 @@ class Arithmetic:
             data = pd.DataFrame(data=resulting_data, columns=[self.name])
         return data
 
+    def unparse(self) -> str:
+        return self.ror.unparse()
+
     def has_row_change_op(self) -> bool:
         return self.ror.has_row_change_op()
