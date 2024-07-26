@@ -9,8 +9,8 @@ use pyo3::{
 };
 pub use rormula_rs::exmex::prelude::*;
 pub use rormula_rs::exmex::ExError;
-use rormula_rs::{array::DefaultOrder, result::RoErr};
 use rormula_rs::{array::Array2d, expression::ExprArithmetic};
+use rormula_rs::{array::DefaultOrder, result::RoErr};
 use rormula_rs::{
     expression::{ExprColCount, ExprNames, ExprWilkinson, NameValue, Value},
     timing,
@@ -165,7 +165,8 @@ fn eval_wilkinson<'py>(
             .collect::<PyResult<Vec<_>>>()?,
         "vars"
     );
-    let (vars_name, mut vars): (Vec<Option<NameValue>>, Vec<Value<DefaultOrder>>) = vars.into_iter().unzip();
+    let (vars_name, mut vars): (Vec<Option<NameValue>>, Vec<Value<DefaultOrder>>) =
+        vars.into_iter().unzip();
     let vars_name: Vec<NameValue> = vars_name.into_iter().flatten().collect();
 
     if vars.len() != ror.expr.var_names().len() {
