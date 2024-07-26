@@ -1,4 +1,8 @@
-use crate::{array::{Array2d, MemOrder}, result::RoResult, roerr};
+use crate::{
+    array::{Array2d, MemOrder},
+    result::RoResult,
+    roerr,
+};
 use std::mem;
 
 use super::Value;
@@ -36,7 +40,11 @@ pub fn op_componentwise_array<M: MemOrder>(
     a.componentwise(b, op)
 }
 
-pub fn op_scalar<M: MemOrder + Default>(a: Value<M>, b: Value<M>, op: &impl Fn(f64, f64) -> f64) -> Value<M> {
+pub fn op_scalar<M: MemOrder + Default>(
+    a: Value<M>,
+    b: Value<M>,
+    op: &impl Fn(f64, f64) -> f64,
+) -> Value<M> {
     let arr_vs_sc = |arr: &mut Array2d<M>, sc| {
         arr.elt_mutate(&|elt| op(elt, sc));
         Value::Array(mem::take(arr))

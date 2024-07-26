@@ -7,7 +7,7 @@ use crate::{
     roerr, timing,
 };
 
-pub trait MemOrder : Default + Debug + Clone + PartialEq {
+pub trait MemOrder: Default + Debug + Clone + PartialEq {
     fn get(data: &[f64], row_idx: usize, col_idx: usize, n_rows: usize, n_cols: usize) -> f64;
     fn set(
         data: &mut [f64],

@@ -250,7 +250,6 @@ fn names_equal(names: &[String], expected: &[&str]) {
 use crate::array::ColMajor;
 #[cfg(test)]
 fn array_almost_equal(a1: Array2d<ColMajor>, a2: Array2d<ColMajor>) {
-
     assert_eq!(a1.n_cols(), a2.n_cols());
     assert_eq!(a1.n_rows(), a2.n_rows());
     println!("{a1:?}");

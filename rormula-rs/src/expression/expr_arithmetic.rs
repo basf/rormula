@@ -311,7 +311,6 @@ where
 
 const ROW_CHANGE_OPS: [&str; 1] = ["|"];
 
-
 pub fn has_row_change_op(expr: &ExprArithmetic) -> bool {
     expr.operator_reprs()
         .iter()

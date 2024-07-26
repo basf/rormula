@@ -61,7 +61,9 @@ fn test_arithmetic() {
         let res = expr.eval_vec(vars).unwrap();
         let s_ref = "x * -2.0";
         let expr_ref = ExprArithmetic::parse(s_ref).unwrap();
-        let rev_val = expr_ref.eval(&[Value::Array(Array2d::<O>::ones(5, 1))]).unwrap();
+        let rev_val = expr_ref
+            .eval(&[Value::Array(Array2d::<O>::ones(5, 1))])
+            .unwrap();
         assert_eq!(res, rev_val);
         let s = "4*3";
         let expr = ExprArithmetic::<O>::parse(s).unwrap();
