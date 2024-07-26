@@ -90,3 +90,6 @@ class Arithmetic:
         else:
             data = pd.DataFrame(data=resulting_data, columns=[self.name])
         return data
+
+    def has_row_change_op(self) -> bool:
+        return self.ror.has_row_change_op()

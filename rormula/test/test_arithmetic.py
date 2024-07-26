@@ -60,6 +60,53 @@ def test_arithmetic():
     rormula = Arithmetic(s, "reduced")
     res = rormula.eval_asdf(df)
     assert np.allclose(res.to_numpy().item(), (5.0 - 2.5) / 4.0)
+    assert rormula.has_row_change_op()
+
+    def test_unary(repr: str, np_func):
+        s = f"{repr}( ((first_var|{{second.var}}==5.0) - (first_var|{{second.var}}==2.5)) / 4.0)"
+        data[7, :] = 5.0
+        df = pd.DataFrame(data=data[:10, :2], columns=["first_var", "second.var"])
+        rormula = Arithmetic(s, "reduced")
+        res = rormula.eval_asdf(df)
+        assert np.allclose(res.to_numpy().item(), np_func((5.0 - 2.5) / 4.0))
+        assert rormula.has_row_change_op()
+        s = f"{repr}(first_var) * {repr}({{second.var}})"
+        rormula = Arithmetic(s, "multiplied")
+        res = rormula.eval_asdf(df)
+        assert np.allclose(
+            res["multiplied"], np_func(df["first_var"]) * np_func(df["second.var"])
+        )
+
+    test_unary("abs", np.abs)
+    test_unary("floor", np.floor)
+    test_unary("ceil", np.ceil)
+    test_unary("sign", np.sign)
+    test_unary("sqrt", np.sqrt)
+    test_unary("exp", np.exp)
+    test_unary("log", np.log)
+    test_unary("log2", np.log2)
+    test_unary("log10", np.log10)
+    test_unary("sin", np.sin)
+    test_unary("cos", np.cos)
+    test_unary("tan", np.tan)
+
+    data = np.random.random((100, 1))
+    df = pd.DataFrame(data=data, columns=["alpha"])
+    df[df == 0.5] = 0.5001
+    s = "round(alpha)"
+    rormula = Arithmetic(s, "rounded")
+    res = rormula.eval_asdf(df)
+    assert np.allclose(res["rounded"], np.round(df["alpha"]))
+
+    def atest(s, np_func):
+        rormula = Arithmetic(f"{s}(alpha)", "atri")
+        res = rormula.eval_asdf(df)
+        assert np.allclose(res["atri"], np_func(df["alpha"]))
+
+    atest("asin", np.arcsin)
+    atest("acos", np.arccos)
+    atest("atan", np.arctan)
+    atest("sqrt", np.sqrt)
 
 
 def test_scalar_scalar():
@@ -78,6 +125,7 @@ def test_scalar_scalar():
     res = rormula.eval_asdf(df)
     ref = df.eval(s)
     np.allclose(res[name].to_numpy(), ref)
+    assert not rormula.has_row_change_op()
 
 
 if __name__ == "__main__":

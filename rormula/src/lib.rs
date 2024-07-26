@@ -9,7 +9,10 @@ use pyo3::{
 };
 pub use rormula_rs::exmex::prelude::*;
 pub use rormula_rs::exmex::ExError;
-use rormula_rs::{array::Array2d, expression::ExprArithmetic};
+use rormula_rs::{
+    array::Array2d,
+    expression::{has_row_change_op, ExprArithmetic},
+};
 use rormula_rs::{array::DefaultOrder, result::RoErr};
 use rormula_rs::{
     expression::{ExprColCount, ExprNames, ExprWilkinson, NameValue, Value},
@@ -233,6 +236,12 @@ fn parse_arithmetic(s: &str) -> PyResult<Arithmetic> {
 #[pyclass]
 struct Arithmetic {
     expr: ExprArithmetic,
+}
+#[pymethods]
+impl Arithmetic {
+    pub fn has_row_change_op(&self) -> PyResult<bool> {
+        Ok(has_row_change_op(&self.expr))
+    }
 }
 
 #[derive(Debug)]

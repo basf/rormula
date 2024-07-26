@@ -1,4 +1,5 @@
 use exmex::BinOp;
+use exmex::Express;
 use exmex::FlatEx;
 use exmex::MakeOperators;
 use exmex::Operator;
@@ -285,14 +286,53 @@ where
                     is_commutative: false,
                 },
             ),
+            Operator::make_unary("abs", |a| op_unary(a, &|x| x.abs())),
+            Operator::make_unary("sqrt", |a| op_unary(a, &|x| x.sqrt())),
+            Operator::make_unary("round", |a| op_unary(a, &|x| x.round())),
+            Operator::make_unary("floor", |a| op_unary(a, &|x| x.floor())),
+            Operator::make_unary("ceil", |a| op_unary(a, &|x| x.ceil())),
+            Operator::make_unary("trunc", |a| op_unary(a, &|x| x.trunc())),
+            Operator::make_unary("fract", |a| op_unary(a, &|x| x.fract())),
+            Operator::make_unary("sign", |a| op_unary(a, &|x| x.signum())),
+            Operator::make_unary("sin", |a| op_unary(a, &|x| x.sin())),
+            Operator::make_unary("cos", |a| op_unary(a, &|x| x.cos())),
+            Operator::make_unary("tan", |a| op_unary(a, &|x| x.tan())),
+            Operator::make_unary("asin", |a| op_unary(a, &|x| x.asin())),
+            Operator::make_unary("acos", |a| op_unary(a, &|x| x.acos())),
+            Operator::make_unary("atan", |a| op_unary(a, &|x| x.atan())),
+            Operator::make_unary("exp", |a| op_unary(a, &|x| x.exp())),
+            Operator::make_unary("ln", |a| op_unary(a, &|x| x.ln())),
+            Operator::make_unary("log", |a| op_unary(a, &|x| x.ln())),
+            Operator::make_unary("log2", |a| op_unary(a, &|x| x.log2())),
+            Operator::make_unary("log10", |a| op_unary(a, &|x| x.log10())),
         ]
     }
 }
 
-pub type ExprArithmetic<M=DefaultOrder> = FlatEx<Value<M>, ArithmeticOpsFactory>;
+const ROW_CHANGE_OPS: [&str; 1] = ["|"];
+
+
+pub fn has_row_change_op(expr: &ExprArithmetic) -> bool {
+    expr.operator_reprs()
+        .iter()
+        .any(|o| ROW_CHANGE_OPS.contains(&o.as_str()))
+}
+
+pub type ExprArithmetic<M = DefaultOrder> = FlatEx<Value<M>, ArithmeticOpsFactory>;
 
 #[cfg(test)]
 use crate::array::ColMajor;
+#[test]
+fn keep_or_change_ops() {
+    let x = ExprArithmetic::parse("x + 1").unwrap();
+    assert!(!has_row_change_op(&x));
+    let x = ExprArithmetic::parse("x + y - 1 == 4").unwrap();
+    assert!(!has_row_change_op(&x));
+    let x = ExprArithmetic::parse("sin(x) + y - 2").unwrap();
+    assert!(!has_row_change_op(&x));
+    let x = ExprArithmetic::parse("sin(x)|y==2").unwrap();
+    assert!(has_row_change_op(&x));
+}
 #[test]
 fn test() {
     let a = Array2d::<ColMajor>::from_iter([0.0, 1.0, 2.0, 3.0, 4.0, 5.0].iter(), 3, 2).unwrap();
@@ -353,10 +393,8 @@ fn test() {
     );
     let a_ref = Value::RowInds(vec![0]);
     assert_eq!(res, a_ref);
-    let res: Value<ColMajor> = op_compare_equals(
-        Value::RowInds(vec![4, 3, 2]),
-        Value::RowInds(vec![1, 3, 7]),
-    );
+    let res: Value<ColMajor> =
+        op_compare_equals(Value::RowInds(vec![4, 3, 2]), Value::RowInds(vec![1, 3, 7]));
     let a_ref = Value::RowInds(vec![1]);
     assert_eq!(res, a_ref);
 
