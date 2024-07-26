@@ -1,10 +1,17 @@
 use std::str::FromStr;
 
-use crate::{array::Array2d, result::RoErr, roerr};
+use crate::{
+    array::{Array2d, MemOrder},
+    result::RoErr,
+    roerr,
+};
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum Value {
-    Array(Array2d),
+pub enum Value<M>
+where
+    M: MemOrder,
+{
+    Array(Array2d<M>),
     RowInds(Vec<usize>),
     /// String is the name of the categorical
     Cats(Vec<String>),
@@ -12,12 +19,12 @@ pub enum Value {
     /// String is the error message
     Error(String),
 }
-impl Default for Value {
+impl<M: MemOrder> Default for Value<M> {
     fn default() -> Self {
         Self::Error("default".to_string())
     }
 }
-impl FromStr for Value {
+impl<M: MemOrder> FromStr for Value<M> {
     type Err = RoErr;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Value::Scalar(
@@ -34,7 +41,7 @@ pub enum NameValue {
     Error(String),
 }
 impl NameValue {
-    pub fn cats_from_value(feature_name: String, cats: Value) -> Option<Self> {
+    pub fn cats_from_value<M: MemOrder>(feature_name: String, cats: Value<M>) -> Option<Self> {
         if let Value::Cats(c) = cats {
             Some(Self::Cats((feature_name, c)))
         } else {

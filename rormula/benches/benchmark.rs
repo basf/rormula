@@ -10,7 +10,7 @@ use numpy::{
     PyArray2, PyReadonlyArray2,
 };
 use pyo3::PyResult;
-use rormula_rs::array::Array2d;
+use rormula_rs::array::{Array2d, ColMajor, MemOrder, RowMajor};
 use std::mem;
 pub fn initialize_python() -> PyResult<()> {
     pyo3::prepare_freethreaded_python();
@@ -20,7 +20,7 @@ pub fn initialize_python() -> PyResult<()> {
 fn from_pyarray_nd(pyarray: &PyReadonlyArray2<f64>) -> Array2<f64> {
     pyarray.to_owned_array()
 }
-fn from_pyarray(pyarray: &PyReadonlyArray2<f64>) -> Array2d {
+fn from_pyarray<M: MemOrder>(pyarray: &PyReadonlyArray2<f64>) -> Array2d<M> {
     let view = pyarray.as_array();
     let n_rows = view.shape()[0];
     let n_cols = view.shape()[1];
@@ -30,14 +30,14 @@ fn from_pyarray(pyarray: &PyReadonlyArray2<f64>) -> Array2d {
 fn add_col_nd(arr1: Array2<f64>, arr2: Array2<f64>) -> Array2<f64> {
     concatenate(Axis(1), &[arr1.view(), arr2.view()]).unwrap()
 }
-fn add_col(arr1: Array2d, arr2: Array2d) -> Array2d {
+fn add_col<M: MemOrder>(arr1: Array2d<M>, arr2: Array2d<M>) -> Array2d<M> {
     arr1.concatenate_cols(arr2).unwrap()
 }
 
 fn compute_nd(arr1: &mut Array1<f64>, arr2: &Array1<f64>) -> Array1<f64> {
     arr1.clone() * arr2
 }
-fn compute(arr1: &mut Array2d, arr2: &Array2d) -> Array2d {
+fn compute<M: MemOrder>(arr1: &mut Array2d<M>, arr2: &Array2d<M>) -> Array2d<M> {
     let col_idx = 0;
 
     let mutate = |idx, val| val * arr2.get(idx, col_idx);
@@ -46,7 +46,7 @@ fn compute(arr1: &mut Array2d, arr2: &Array2d) -> Array2d {
     mem::take(arr1)
 }
 
-fn criterion_benchmark(c: &mut Criterion) {
+fn criterion_benchmark<M: MemOrder>(c: &mut Criterion) {
     initialize_python().unwrap();
     Python::with_gil(|py| {
         let pyarray = PyArray2::<f64>::zeros_bound(py, (500000, 3), false);
@@ -55,10 +55,10 @@ fn criterion_benchmark(c: &mut Criterion) {
             b.iter(|| from_pyarray_nd(black_box(&readonly)))
         });
         c.bench_function("create array", |b| {
-            b.iter(|| from_pyarray(black_box(&readonly)))
+            b.iter(|| from_pyarray::<M>(black_box(&readonly)))
         });
         let arr_nd = from_pyarray_nd(&readonly);
-        let arr = from_pyarray(&readonly);
+        let arr = from_pyarray::<M>(&readonly);
 
         c.bench_function("conc nd", |b| {
             b.iter(|| add_col_nd(black_box(arr_nd.clone()), arr_nd.clone()))
@@ -78,5 +78,9 @@ fn criterion_benchmark(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, criterion_benchmark);
+criterion_group!(
+    benches,
+    criterion_benchmark::<ColMajor>,
+    criterion_benchmark::<RowMajor>
+);
 criterion_main!(benches);

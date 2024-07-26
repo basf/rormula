@@ -1,4 +1,4 @@
-use crate::{array::Array2d, result::RoResult, roerr};
+use crate::{array::{Array2d, MemOrder}, result::RoResult, roerr};
 use std::mem;
 
 use super::Value;
@@ -11,7 +11,7 @@ pub fn unique_cats(cats: &[String]) -> RoResult<(Vec<&String>, &String)> {
     Ok((unique, removed_cat))
 }
 
-pub fn cat_to_dummy(c: Value) -> RoResult<Value> {
+pub fn cat_to_dummy<M: MemOrder>(c: Value<M>) -> RoResult<Value<M>> {
     if let Value::Cats(cats) = c {
         let (unique, removed_cat) = unique_cats(&cats)?;
         let (n_rows, n_cols) = (cats.len(), unique.len());
@@ -28,20 +28,20 @@ pub fn cat_to_dummy(c: Value) -> RoResult<Value> {
     }
 }
 
-pub fn op_componentwise_array(
-    a: Array2d,
-    b: Array2d,
+pub fn op_componentwise_array<M: MemOrder>(
+    a: Array2d<M>,
+    b: Array2d<M>,
     op: &impl Fn(f64, f64) -> f64,
-) -> RoResult<Array2d> {
+) -> RoResult<Array2d<M>> {
     a.componentwise(b, op)
 }
 
-pub fn op_scalar(a: Value, b: Value, op: &impl Fn(f64, f64) -> f64) -> Value {
-    let arr_vs_sc = |arr: &mut Array2d, sc| {
+pub fn op_scalar<M: MemOrder + Default>(a: Value<M>, b: Value<M>, op: &impl Fn(f64, f64) -> f64) -> Value<M> {
+    let arr_vs_sc = |arr: &mut Array2d<M>, sc| {
         arr.elt_mutate(&|elt| op(elt, sc));
         Value::Array(mem::take(arr))
     };
-    let sc_vs_arr = |sc, arr: &mut Array2d| {
+    let sc_vs_arr = |sc, arr: &mut Array2d<M>| {
         arr.elt_mutate(&|elt| op(sc, elt));
         Value::Array(mem::take(arr))
     };
@@ -57,6 +57,6 @@ pub fn op_scalar(a: Value, b: Value, op: &impl Fn(f64, f64) -> f64) -> Value {
     }
 }
 
-pub fn op_power(a: Value, b: Value) -> Value {
+pub fn op_power<M: MemOrder + Default>(a: Value<M>, b: Value<M>) -> Value<M> {
     op_scalar(a, b, &|x, y| x.powf(y))
 }

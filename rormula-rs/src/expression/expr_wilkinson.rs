@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use exmex::{ops_factory, BinOp, FlatEx, MakeOperators, Operator};
 
-use crate::array::Array2d;
+use crate::array::{Array2d, DefaultOrder, MemOrder};
 use crate::expression::{ops_common, value::Value};
 use crate::result::RoResult;
 use crate::timing;
@@ -22,7 +22,11 @@ fn cat_to_dummy_name(c: NameValue) -> RoResult<NameValue> {
     }
 }
 
-fn apply_op(a: Value, b: Value, op: &impl Fn(Array2d, Array2d) -> RoResult<Array2d>) -> Value {
+fn apply_op<M: MemOrder>(
+    a: Value<M>,
+    b: Value<M>,
+    op: &impl Fn(Array2d<M>, Array2d<M>) -> RoResult<Array2d<M>>,
+) -> Value<M> {
     let a = match ops_common::cat_to_dummy(a) {
         Ok(arr) => arr,
         Err(e) => Value::Error(e.msg().to_string()),
@@ -45,13 +49,13 @@ fn apply_op(a: Value, b: Value, op: &impl Fn(Array2d, Array2d) -> RoResult<Array
     }
 }
 
-pub fn op_concat(a: Value, b: Value) -> Value {
+pub fn op_concat<M: MemOrder>(a: Value<M>, b: Value<M>) -> Value<M> {
     timing!(apply_op(a, b, &|a, b| a.concatenate_cols(b)), "plus op")
 }
 
-pub fn op_multiply(a: Value, b: Value) -> Value {
+pub fn op_multiply<M: MemOrder>(a: Value<M>, b: Value<M>) -> Value<M> {
     timing!(
-        apply_op(a, b, &|a: Array2d, b: Array2d| {
+        apply_op(a, b, &|a: Array2d<M>, b: Array2d<M>| {
             a.componentwise(b, &|x, y| x * y)
         }),
         "multiply op"
@@ -60,8 +64,11 @@ pub fn op_multiply(a: Value, b: Value) -> Value {
 
 #[derive(Clone, Debug)]
 pub struct WilkinsonOpsFactory;
-impl MakeOperators<Value> for WilkinsonOpsFactory {
-    fn make<'b>() -> Vec<Operator<'b, Value>> {
+impl<M> MakeOperators<Value<M>> for WilkinsonOpsFactory
+where
+    M: MemOrder + Clone,
+{
+    fn make<'b>() -> Vec<Operator<'b, Value<M>>> {
         vec![
             Operator::make_bin(
                 "^",
@@ -91,7 +98,7 @@ impl MakeOperators<Value> for WilkinsonOpsFactory {
     }
 }
 
-pub type ExprWilkinson = FlatEx<Value, WilkinsonOpsFactory>;
+pub type ExprWilkinson = FlatEx<Value<DefaultOrder>, WilkinsonOpsFactory>;
 
 fn apply_name_op(
     a: NameValue,
@@ -210,7 +217,7 @@ impl MakeOperators<usize> for ColCountOps {
 pub type ExprColCount = FlatEx<usize, ColCountOps>;
 
 #[cfg(test)]
-fn get_cat_fortest(n_rows: Option<usize>) -> (Vec<String>, String, Value) {
+fn get_cat_fortest<M: MemOrder + Clone>(n_rows: Option<usize>) -> (Vec<String>, String, Value<M>) {
     let feature_name = "animal".to_string();
     let cats_all = ["zebra", "alpaca", "boa", "dragon", "zebra", "dragon"];
     let cats = if let Some(n_rows) = n_rows {
@@ -240,7 +247,10 @@ fn names_equal(names: &[String], expected: &[&str]) {
     }
 }
 #[cfg(test)]
-fn array_almost_equal(a1: Array2d, a2: Array2d) {
+use crate::array::ColMajor;
+#[cfg(test)]
+fn array_almost_equal(a1: Array2d<ColMajor>, a2: Array2d<ColMajor>) {
+
     assert_eq!(a1.n_cols(), a2.n_cols());
     assert_eq!(a1.n_rows(), a2.n_rows());
     println!("{a1:?}");
@@ -252,7 +262,7 @@ fn array_almost_equal(a1: Array2d, a2: Array2d) {
 
 #[test]
 fn test_cat_to_dummy() {
-    let (reference_names, feature_name, cats) = get_cat_fortest(None);
+    let (reference_names, feature_name, cats) = get_cat_fortest::<ColMajor>(None);
     let cat_name = NameValue::cats_from_value(feature_name, cats.clone()).unwrap();
     if let NameValue::Array(names) = cat_to_dummy_name(cat_name).unwrap() {
         println!("{names:?}");

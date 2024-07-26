@@ -7,7 +7,13 @@ use std::mem;
 use super::ops_common;
 use super::Value;
 use crate::array::Array2d;
-fn apply_op(mut a: Value, mut b: Value, op: &impl Fn(f64, f64) -> f64) -> Value {
+use crate::array::DefaultOrder;
+use crate::array::MemOrder;
+fn apply_op<M: MemOrder>(
+    mut a: Value<M>,
+    mut b: Value<M>,
+    op: &impl Fn(f64, f64) -> f64,
+) -> Value<M> {
     // We take mutable references because otherwise in second (scalar) arm they would already have
     // been moved and not available anymore
     let res = match (&mut a, &mut b) {
@@ -24,20 +30,20 @@ fn apply_op(mut a: Value, mut b: Value, op: &impl Fn(f64, f64) -> f64) -> Value 
     }
 }
 
-pub fn op_add(a: Value, b: Value) -> Value {
+pub fn op_add<M: MemOrder>(a: Value<M>, b: Value<M>) -> Value<M> {
     apply_op(a, b, &|x, y| x + y)
 }
-pub fn op_sub(a: Value, b: Value) -> Value {
+pub fn op_sub<M: MemOrder>(a: Value<M>, b: Value<M>) -> Value<M> {
     apply_op(a, b, &|x, y| x - y)
 }
-pub fn op_mul(a: Value, b: Value) -> Value {
+pub fn op_mul<M: MemOrder>(a: Value<M>, b: Value<M>) -> Value<M> {
     apply_op(a, b, &|x, y| x * y)
 }
-pub fn op_div(a: Value, b: Value) -> Value {
+pub fn op_div<M: MemOrder>(a: Value<M>, b: Value<M>) -> Value<M> {
     apply_op(a, b, &|x, y| x / y)
 }
 
-pub fn op_unary(a: Value, op: &impl Fn(f64) -> f64) -> Value {
+pub fn op_unary<M: MemOrder>(a: Value<M>, op: &impl Fn(f64) -> f64) -> Value<M> {
     match a {
         Value::Array(mut arr) => {
             arr.elt_mutate(op);
@@ -130,23 +136,23 @@ macro_rules! op_compare {
     };
 }
 
-pub fn op_compare_ge(a: Value, b: Value) -> Value {
+pub fn op_compare_ge<M: MemOrder>(a: Value<M>, b: Value<M>) -> Value<M> {
     op_compare!(a, b, |v1, v2| v1 >= v2, floats_ge)
 }
-pub fn op_compare_le(a: Value, b: Value) -> Value {
+pub fn op_compare_le<M: MemOrder>(a: Value<M>, b: Value<M>) -> Value<M> {
     op_compare!(a, b, |v1, v2| v1 <= v2, floats_le)
 }
-pub fn op_compare_gt(a: Value, b: Value) -> Value {
+pub fn op_compare_gt<M: MemOrder>(a: Value<M>, b: Value<M>) -> Value<M> {
     op_compare!(a, b, |v1, v2| v1 > v2, floats_gt)
 }
-pub fn op_compare_lt(a: Value, b: Value) -> Value {
+pub fn op_compare_lt<M: MemOrder>(a: Value<M>, b: Value<M>) -> Value<M> {
     op_compare!(a, b, |v1, v2| v1 < v2, floats_lt)
 }
-pub fn op_compare_equals(a: Value, b: Value) -> Value {
+pub fn op_compare_equals<M: MemOrder>(a: Value<M>, b: Value<M>) -> Value<M> {
     op_compare!(a, b, |v1, v2| v1 == v2, floats_almost_equals)
 }
 
-pub fn op_restrict(a: Value, b: Value) -> Value {
+pub fn op_restrict<M: MemOrder>(a: Value<M>, b: Value<M>) -> Value<M> {
     match (a, b) {
         (Value::Array(a), Value::RowInds(ris)) => {
             let max = ris.iter().max();
@@ -184,8 +190,11 @@ pub fn op_restrict(a: Value, b: Value) -> Value {
 
 #[derive(Clone, Debug)]
 pub struct ArithmeticOpsFactory;
-impl MakeOperators<Value> for ArithmeticOpsFactory {
-    fn make<'b>() -> Vec<Operator<'b, Value>> {
+impl<M> MakeOperators<Value<M>> for ArithmeticOpsFactory
+where
+    M: Clone + MemOrder,
+{
+    fn make<'b>() -> Vec<Operator<'b, Value<M>>> {
         vec![
             Operator::make_bin(
                 "^",
@@ -280,11 +289,13 @@ impl MakeOperators<Value> for ArithmeticOpsFactory {
     }
 }
 
-pub type ExprArithmetic = FlatEx<Value, ArithmeticOpsFactory>;
+pub type ExprArithmetic<M=DefaultOrder> = FlatEx<Value<M>, ArithmeticOpsFactory>;
 
+#[cfg(test)]
+use crate::array::ColMajor;
 #[test]
 fn test() {
-    let a = Array2d::from_iter([0.0, 1.0, 2.0, 3.0, 4.0, 5.0].iter(), 3, 2).unwrap();
+    let a = Array2d::<ColMajor>::from_iter([0.0, 1.0, 2.0, 3.0, 4.0, 5.0].iter(), 3, 2).unwrap();
     let a_ref = Array2d::from_iter([1.0, 2.0, 3.0, 4.0, 5.0, 6.0].iter(), 3, 2).unwrap();
     let res = op_add(Value::Array(a.clone()), Value::Scalar(1.0));
     match res {
@@ -297,7 +308,7 @@ fn test() {
         Value::Array(a) => assert_eq!(a, a_ref.clone()),
         _ => assert!(false),
     }
-    let a = Array2d::from_iter([0.0, 1.0, 2.0, 3.0, 4.0, 5.0].iter(), 6, 1).unwrap();
+    let a = Array2d::<ColMajor>::from_iter([0.0, 1.0, 2.0, 3.0, 4.0, 5.0].iter(), 6, 1).unwrap();
     let b = Array2d::from_iter([2.0, 1.0, 3.0, 5.0, 10.0, 9.0].iter(), 6, 1).unwrap();
     let res = op_mul(Value::Array(b.clone()), Value::Array(a.clone()));
     let a_ref = Array2d::from_iter([0.0, 1.0, 6.0, 15.0, 40.0, 45.0].iter(), 6, 1).unwrap();
@@ -337,25 +348,28 @@ fn test() {
     let a_ref = Value::RowInds(vec![1]);
     assert_eq!(res, a_ref);
     let res = op_compare_equals(
-        Value::Cats(vec!["a".to_string(), "b".to_string()]),
+        Value::<ColMajor>::Cats(vec!["a".to_string(), "b".to_string()]),
         Value::Cats(vec!["a".to_string(), "c".to_string()]),
     );
     let a_ref = Value::RowInds(vec![0]);
     assert_eq!(res, a_ref);
-    let res = op_compare_equals(Value::RowInds(vec![4, 3, 2]), Value::RowInds(vec![1, 3, 7]));
+    let res: Value<ColMajor> = op_compare_equals(
+        Value::RowInds(vec![4, 3, 2]),
+        Value::RowInds(vec![1, 3, 7]),
+    );
     let a_ref = Value::RowInds(vec![1]);
     assert_eq!(res, a_ref);
 
     let res = op_restrict(Value::Array(a.clone()), Value::RowInds(vec![0, 2, 4]));
     let a_ref = Value::Array(Array2d::from_iter([0.0, 2.0, 4.0].iter(), 3, 1).unwrap());
     assert_eq!(res, a_ref);
-    let res = op_restrict(
+    let res: Value<ColMajor> = op_restrict(
         Value::Cats(vec!["a".to_string(), "b".to_string()]),
         Value::RowInds(vec![1]),
     );
     let c_ref = Value::Cats(vec!["b".to_string()]);
     assert_eq!(res, c_ref);
-    let res = op_restrict(
+    let res: Value<ColMajor> = op_restrict(
         Value::RowInds(vec![1, 2, 3, 4]),
         Value::RowInds(vec![1, 2, 3]),
     );

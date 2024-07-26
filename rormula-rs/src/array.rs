@@ -7,7 +7,7 @@ use crate::{
     roerr, timing,
 };
 
-pub trait MemOrder {
+pub trait MemOrder : Default + Debug + Clone + PartialEq {
     fn get(data: &[f64], row_idx: usize, col_idx: usize, n_rows: usize, n_cols: usize) -> f64;
     fn set(
         data: &mut [f64],
@@ -30,7 +30,7 @@ pub trait MemOrder {
     fn to_ndarray(data: Vec<f64>, n_rows: usize, n_cols: usize) -> RoResult<Array2<f64>>;
 }
 
-#[derive(Default)]
+#[derive(Default, Debug, Clone, PartialEq)]
 pub struct ColMajor;
 impl MemOrder for ColMajor {
     fn get(data: &[f64], row_idx: usize, col_idx: usize, n_rows: usize, _: usize) -> f64 {
@@ -73,7 +73,7 @@ impl MemOrder for ColMajor {
         Array2::from_shape_vec(sh, data).map_err(to_ro)
     }
 }
-#[derive(Default)]
+#[derive(Default, Debug, Clone, PartialEq)]
 pub struct RowMajor;
 impl MemOrder for RowMajor {
     fn get(data: &[f64], row_idx: usize, col_idx: usize, _: usize, n_cols: usize) -> f64 {
@@ -143,10 +143,12 @@ impl MemOrder for RowMajor {
     }
 }
 
+pub type DefaultOrder = ColMajor;
+
 /// Col major ordering which is non-standard!
 /// column major means the next element is the next row in memory, i.e., you iterate along the column
 #[derive(Default)]
-pub struct Array2d<M = ColMajor> {
+pub struct Array2d<M> {
     data: Vec<f64>,
     n_rows: usize,
     n_cols: usize,
