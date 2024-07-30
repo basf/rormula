@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from typing import List, NamedTuple, Tuple, Union
 import numpy as np
 import pandas as pd
@@ -96,3 +97,12 @@ class Arithmetic:
 
     def has_row_change_op(self) -> bool:
         return self.ror.has_row_change_op()
+
+    def operator_reprs(self) -> Sequence[str]:
+        return self.ror.operator_reprs()
+
+    def binary_reprs(self) -> Sequence[str]:
+        return self.ror.operator_reprs()
+
+    def unary_reprs(self) -> Sequence[str]:
+        return self.ror.operator_reprs()

@@ -1,10 +1,10 @@
 [package]
 name = "rormula-rs"
-version = "0.1.8"
+version = "0.1.9"
 edition = "2021"
 
 [dependencies]
-exmex = "0.20.2"
+exmex = "0.20.3"
 numpy = "0.21.0"
 
 [features]

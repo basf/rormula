@@ -245,6 +245,15 @@ impl Arithmetic {
     pub fn unparse(&self) -> PyResult<String> {
         Ok(self.expr.unparse().to_string())
     }
+    pub fn operator_reprs(&self) -> PyResult<Vec<String>> {
+        Ok(self.expr.operator_reprs().to_vec())
+    }
+    pub fn unary_reprs(&self) -> PyResult<Vec<String>> {
+        Ok(self.expr.unary_reprs().to_vec())
+    }
+    pub fn binary_reprs(&self) -> PyResult<Vec<String>> {
+        Ok(self.expr.binary_reprs().to_vec())
+    }
 }
 
 #[derive(Debug)]

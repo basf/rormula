@@ -204,9 +204,9 @@ dependencies = [
 
 [[package]]
 name = "exmex"
-version = "0.20.2"
+version = "0.20.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc9d45aed60d70aa650ac70cb3aee63b7976c5620f7bf7ff302de69dc5891fae"
+checksum = "d149d73b9c2ed0fe99dfc84f34def4b034ed576d7ab7c2ff49f00d3d414390d4"
 dependencies = [
  "lazy_static",
  "num",
@@ -679,7 +679,7 @@ checksum = "c08c74e62047bb2de4ff487b251e4a92e24f48745648451635cec7d591162d9f"
 
 [[package]]
 name = "rormula"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "criterion",
  "numpy",
@@ -690,7 +690,7 @@ dependencies = [
 
 [[package]]
 name = "rormula-rs"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "exmex",
  "numpy",
