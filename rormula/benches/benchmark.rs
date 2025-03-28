@@ -49,7 +49,7 @@ fn compute<M: MemOrder>(arr1: &mut Array2d<M>, arr2: &Array2d<M>) -> Array2d<M> 
 fn criterion_benchmark<M: MemOrder>(c: &mut Criterion) {
     initialize_python().unwrap();
     Python::with_gil(|py| {
-        let pyarray = PyArray2::<f64>::zeros_bound(py, (500000, 3), false);
+        let pyarray = PyArray2::<f64>::zeros(py, (500000, 3), false);
         let readonly = pyarray.readonly();
         c.bench_function("create nd", |b| {
             b.iter(|| from_pyarray_nd(black_box(&readonly)))
