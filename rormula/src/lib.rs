@@ -80,7 +80,7 @@ fn eval_arithmetic<'py>(
                         pya[(row, col)] = a.get(row, col);
                     }
                 }
-                let res = pya.into_pyarray_bound(py);
+                let res = pya.into_pyarray(py);
 
                 Ok(res)
             }
@@ -89,10 +89,10 @@ fn eval_arithmetic<'py>(
                 for row in 0..row_inds.len() {
                     pya[(row, 0)] = row_inds[row] as f64;
                 }
-                let res = pya.into_pyarray_bound(py);
+                let res = pya.into_pyarray(py);
                 Ok(res)
             }
-            Value::Scalar(s) => Ok(Array2::<f64>::from_elem((1, 1), s).into_pyarray_bound(py)),
+            Value::Scalar(s) => Ok(Array2::<f64>::from_elem((1, 1), s).into_pyarray(py)),
             Value::Cats(_) => Err(PyValueError::new_err("result cannot be cat".to_string())),
             Value::Error(e) => Err(PyValueError::new_err(format!("computation failed, {e:?}"))),
         }
@@ -208,7 +208,7 @@ fn eval_wilkinson<'py>(
 
                     let pya = timing!(a.to_ndarray().map_err(ro_to_pyerr)?, "to ndarray");
                     let pya = timing!(concatenate![Axis(1), intercept, pya], "intercept");
-                    let res = timing!(pya.into_pyarray_bound(py), "into bound");
+                    let res = timing!(pya.into_pyarray(py), "into bound");
 
                     Ok((names, res))
                 }

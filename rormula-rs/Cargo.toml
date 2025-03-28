@@ -1,11 +1,11 @@
 [package]
 name = "rormula-rs"
-version = "0.1.9"
+version = "0.1.10"
 edition = "2021"
 
 [dependencies]
-exmex = "0.20.3"
-numpy = "0.21.0"
+exmex = "0.20.4"
+numpy = "0.24.0"
 
 [features]
 print_timings = []

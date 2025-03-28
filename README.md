@@ -118,7 +118,7 @@ To run the tests, you need to have [Rust](https://www.rust-lang.org/tools/instal
    ```
 2. Install dev dependencies via
    ```
-   pip install -r requirements.txt
+   pip install -r requirements-dev.txt
    ```
 3. Create a development build of Rormula
    ```

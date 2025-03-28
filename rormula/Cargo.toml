@@ -1,6 +1,6 @@
 [package]
 name = "rormula"
-version = "0.1.9"
+version = "0.1.10"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -9,8 +9,8 @@ name = "rormula"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.21.2", features = ["generate-import-lib"] }
-numpy = "0.21.0"
+pyo3 = { version = "0.24.0", features = ["generate-import-lib"] }
+numpy = "0.24.0"
 rormula-rs = { path = "../rormula-rs" }
 
 # The extension module needs to be a feature due to
@@ -22,7 +22,7 @@ print_timings = ["rormula-rs/print_timings"]
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["html_reports"] }
-which = "6.0.1"
+which = "7.0.2"
 
 [[bench]]
 name = "benchmark"
