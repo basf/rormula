@@ -9,8 +9,8 @@ name = "rormula"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.24.1", features = ["generate-import-lib"] }
-numpy = "0.24.0"
+pyo3 = { version = "0.26.0", features = ["generate-import-lib"] }
+numpy = "0.26.0"
 rormula-rs = { path = "../rormula-rs" }
 
 # The extension module needs to be a feature due to
@@ -21,9 +21,5 @@ default = ["extension-module"]
 print_timings = ["rormula-rs/print_timings"]
 
 [dev-dependencies]
-criterion = { version = "0.5.1", features = ["html_reports"] }
-which = "7.0.2"
-
-[[bench]]
-name = "benchmark"
-harness = false
+criterion = { version = "0.7.0", features = ["html_reports"] }
+which = "8.0.0"

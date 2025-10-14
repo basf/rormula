@@ -107,7 +107,7 @@ fn eval_wilkinson<'py>(
     ror: &Wilkinson,
     numerical_data: PyReadonlyArray2<f64>,
     numerical_cols: &Bound<'py, PyList>,
-    cat_data: PyReadonlyArray2<PyObject>,
+    cat_data: PyReadonlyArray2<Py<PyAny>>,
     cat_cols: &Bound<'py, PyList>,
     skip_names: bool,
 ) -> PyResult<WilkonsonReturnType<'py>> {
