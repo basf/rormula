@@ -33,4 +33,3 @@ def eval_arithmetic(
     numerical_data: np.ndarray,
     numerical_cols: Sequence[str],
 ) -> np.ndarray: ...
-

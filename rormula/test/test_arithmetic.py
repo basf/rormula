@@ -22,7 +22,7 @@ def test_arithmetic():
     s = "beta*alpha - 1 + 2^beta + alpha / gamma"
     rormula = Arithmetic(s, "s")
     df_ror = rormula.eval_asdf(df.copy())
-    pd_s = f's={s.replace("^", "**")}'
+    pd_s = f"s={s.replace('^', '**')}"
     assert df_ror.shape == (100, 4)
     assert np.allclose(df_ror, df.eval(pd_s))
 
