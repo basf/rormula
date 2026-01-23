@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use numpy::ndarray::{Array2, Dim, Shape, ShapeBuilder};
 
 use crate::{
-    result::{to_ro, RoResult},
+    result::{RoResult, to_ro},
     roerr, timing,
 };
 

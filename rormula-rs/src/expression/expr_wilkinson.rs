@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use exmex::{ops_factory, BinOp, FlatEx, MakeOperators, Operator};
+use exmex::{BinOp, FlatEx, MakeOperators, Operator, ops_factory};
 
 use crate::array::{Array2d, DefaultOrder, MemOrder};
 use crate::expression::{ops_common, value::Value};

@@ -1,17 +1,17 @@
 use numpy::{
-    ndarray::{concatenate, s, Array2, ArrayView1, Axis, Dim},
     IntoPyArray, PyArray2, PyReadonlyArray2,
+    ndarray::{Array2, ArrayView1, Axis, Dim, concatenate, s},
 };
 use pyo3::{
     exceptions::{PyTypeError, PyValueError},
     prelude::*,
     types::PyList,
 };
-pub use rormula_rs::exmex::prelude::*;
 pub use rormula_rs::exmex::ExError;
+pub use rormula_rs::exmex::prelude::*;
 use rormula_rs::{
     array::Array2d,
-    expression::{has_row_change_op, ExprArithmetic},
+    expression::{ExprArithmetic, has_row_change_op},
 };
 use rormula_rs::{array::DefaultOrder, result::RoErr};
 use rormula_rs::{
@@ -125,9 +125,9 @@ fn eval_wilkinson<'py>(
                     let names = if skip_names {
                         None
                     } else {
-                        Some(NameValue::Array(vec![numerical_cols
-                            .get_item(num_idx)?
-                            .extract::<String>()?]))
+                        Some(NameValue::Array(vec![
+                            numerical_cols.get_item(num_idx)?.extract::<String>()?,
+                        ]))
                     };
                     timing!(
                         Ok((

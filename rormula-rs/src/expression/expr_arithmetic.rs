@@ -5,8 +5,8 @@ use exmex::MakeOperators;
 use exmex::Operator;
 use std::mem;
 
-use super::ops_common;
 use super::Value;
+use super::ops_common;
 use crate::array::Array2d;
 use crate::array::DefaultOrder;
 use crate::array::MemOrder;

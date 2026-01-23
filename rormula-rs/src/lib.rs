@@ -5,9 +5,7 @@ pub use exmex;
 
 #[macro_export]
 macro_rules! timing {
-    ($block:expr) => {{
-        $block
-    }};
+    ($block:expr) => {{ $block }};
     ($block:expr, $name:expr) => {{
         #[cfg(feature = "print_timings")]
         let now = std::time::Instant::now();
