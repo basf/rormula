@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 exmex = "0.20.5"
-numpy = "0.27.1"
+numpy = "0.28.0"
 
 [features]
 print_timings = []
