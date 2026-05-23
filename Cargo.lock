@@ -29,12 +29,10 @@ dependencies = [
 
 [[package]]
 name = "exmex"
-version = "0.20.5"
+version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "114e4321fcb0242ffe3092e29a7a41c11fc119f1fa8e61cd21b72a68dd004aaa"
+checksum = "e9a53dccfc387af263e69c1eb53d13a4e9b26a7134ffdd38398a208374cbf851"
 dependencies = [
- "lazy_static",
- "num-traits",
  "regex",
  "smallvec",
 ]
@@ -50,12 +48,6 @@ name = "heck"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
-
-[[package]]
-name = "lazy_static"
-version = "1.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
 
 [[package]]
 name = "libc"
