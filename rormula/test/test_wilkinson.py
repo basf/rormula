@@ -1,12 +1,13 @@
 from functools import partial
 from time import perf_counter
 from typing import cast
+
 import formulaic
-from rormula import Wilkinson, SeparatedData
-import rormula as ror
 import numpy as np
 import pandas as pd
 
+import rormula as ror
+from rormula import SeparatedData, Wilkinson
 
 FORMULA_STR_NUMERICAL = "a+b+a:b+c+d+c:d+e+f+e:f"
 COLS_NUMERICAL = ["a", "b", "c", "d", "e", "f"]
@@ -95,8 +96,6 @@ def test_missing_name_in_col():
         assert False
     except ValueError:
         pass
-    except Exception:
-        assert False
 
 
 def timing(f, name, n_warmups=10, n_runs=100):

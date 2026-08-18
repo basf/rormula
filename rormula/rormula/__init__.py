@@ -1,14 +1,16 @@
 from collections.abc import Sequence
-from typing import List, NamedTuple, Tuple, Union
+from typing import NamedTuple
+
 import numpy as np
 import pandas as pd
-from .rormula import parse_wilkinson, eval_wilkinson, parse_arithmetic, eval_arithmetic
+
+from .rormula import eval_arithmetic, eval_wilkinson, parse_arithmetic, parse_wilkinson
 
 
 class SeparatedData(NamedTuple):
-    numerical_cols: List[str]
+    numerical_cols: list[str]
     numerical_data: np.ndarray
-    categorical_cols: List[str]
+    categorical_cols: list[str]
     categorical_data: np.ndarray
 
 
@@ -36,8 +38,8 @@ class Wilkinson:
         self.ror = parse_wilkinson(formula)
 
     def eval(
-        self, data: Union[pd.DataFrame, SeparatedData], skip_names: bool = False
-    ) -> Tuple[List[str], np.ndarray]:
+        self, data: pd.DataFrame | SeparatedData, skip_names: bool = False
+    ) -> tuple[list[str], np.ndarray]:
         if isinstance(data, SeparatedData):
             numerical_cols, numerical_data, categorical_cols, categorical_data = data
         else:
@@ -60,9 +62,7 @@ class Wilkinson:
             names = []
         return names, resulting_data
 
-    def eval_asdf(
-        self, data: Union[pd.DataFrame, SeparatedData], skip_names: bool = False
-    ):
+    def eval_asdf(self, data: pd.DataFrame | SeparatedData, skip_names: bool = False):
         names, resulting_data = self.eval(data, skip_names=skip_names)
         return pd.DataFrame(data=resulting_data, columns=names)
 
