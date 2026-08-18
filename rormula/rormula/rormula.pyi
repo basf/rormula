@@ -3,8 +3,7 @@ from typing import NamedTuple
 
 import numpy as np
 
-class Wilkinson:
-    ...
+class Wilkinson: ...
 
 class SeparatedData(NamedTuple):
     numerical_cols: list[str]
